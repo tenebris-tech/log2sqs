@@ -1,0 +1,17 @@
+#
+# Copyright 2021 Tenebris Technologies Inc.
+#
+[Unit]
+Description=Log to SQS
+After=network.target
+
+[Service]
+WorkingDirectory=/opt/log2sqs
+User=root
+Group=root
+Restart=always
+ExecStart=/opt/log2sqs/log2sqs /opt/log2sqs/log2sqs.conf
+
+[Install]
+WantedBy=multi-user.target
+Alias=log2sqs.service
