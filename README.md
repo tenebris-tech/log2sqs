@@ -19,6 +19,6 @@ This is an alpha release.
 
 ### Copyright
 
-Copyright (c) 2021 Tenebris Technologies Inc. ALl rights reserved.
+Copyright (c) 2021 Tenebris Technologies Inc. All rights reserved.
 
 Please see the LICENSE file for additional information.
