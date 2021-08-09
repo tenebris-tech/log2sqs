@@ -16,8 +16,8 @@ var AWSID = ""
 var AWSKey = ""
 var AWSRegion = ""
 var AWSQueueName = ""
-var InputFile = ""
 var LogFile = ""
+var InputFiles []string
 
 func Load(filename string) error {
 	var item []string
@@ -75,7 +75,8 @@ func Load(filename string) error {
 		case "awsqueuename":
 			AWSQueueName = value
 		case "inputfile":
-			InputFile = value
+			// Append to list (slice)
+			InputFiles = append(InputFiles, value)
 		default:
 			tmp := fmt.Sprintf("error parsing config file: %s", line)
 			return errors.New(tmp)
