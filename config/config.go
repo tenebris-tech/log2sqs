@@ -16,6 +16,7 @@ var AWSID = ""
 var AWSKey = ""
 var AWSRegion = ""
 var AWSQueueName = ""
+var AddEC2Tags = false
 var LogFile = ""
 var InputFiles []string
 
@@ -74,6 +75,8 @@ func Load(filename string) error {
 			AWSRegion = value
 		case "awsqueuename":
 			AWSQueueName = value
+		case "addec2tags":
+			AddEC2Tags = string2bool(value)
 		case "inputfile":
 			// Append to list (slice)
 			InputFiles = append(InputFiles, value)
@@ -83,4 +86,18 @@ func Load(filename string) error {
 		}
 	}
 	return nil
+}
+
+// Return true if string is yes or true (case insensitive)
+func string2bool(s string) bool {
+
+	if strings.ToLower(s) == "yes" {
+		return true
+	}
+
+	if strings.ToLower(s) == "true" {
+		return true
+	}
+
+	return false
 }

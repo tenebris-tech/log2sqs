@@ -5,23 +5,23 @@
 package main
 
 import (
-	"encoding/json"
 	"log"
 	"os"
 	"os/signal"
-	"strings"
 	"syscall"
 	"time"
 
 	"log2sqs/config"
 	"log2sqs/queue"
-
-	"github.com/tenebris-tech/tail"
 )
 
 const ProductName = "log2sqs"
-const ProductVersion = "0.0.2"
+const ProductVersion = "0.0.3"
 
+// Map to store addFields for adding to log events
+var addFields = map[string]string{}
+
+// main entry point
 func main() {
 
 	// Default config file name
@@ -68,6 +68,16 @@ func main() {
 
 	log.Printf("Starting %s %s", ProductName, ProductVersion)
 
+	// Retrieve EC2 addFields if necessary
+	if config.AddEC2Tags {
+		ec2Tags()
+	}
+
+	// Log fields to be added
+	for key, value := range addFields {
+		log.Printf("Adding field %s=%s", key, value)
+	}
+
 	// Open the SQS queue
 	openQueue()
 
@@ -110,67 +120,8 @@ func openQueue() {
 			log.Printf("Sleeping for 60 seconds...")
 			time.Sleep(60 * time.Second)
 		} else {
-			log.Printf("Queue %s opened", config.AWSQueueName)
+			log.Printf("SQS queue %s opened", config.AWSQueueName)
 			return
-		}
-	}
-}
-
-// Tail the file and write to the queue
-func tailFile(index int, filename string, ch chan int) {
-
-	// Infinite loop to allow retry on error
-	for {
-
-		// Map for arbitrary JSON
-		var v map[string]interface{}
-
-		// Set up to tail the file
-		t, err := tail.TailFile(filename, tail.Config{Follow: true, ReOpen: true})
-		if err != nil {
-			log.Printf("Error tailing file: %s [%d %s]", err.Error(), index, filename)
-			log.Printf("Sleeping for 60 seconds...")
-			time.Sleep(60 * time.Second)
-		}
-
-		// Loop and read
-		for line := range t.Lines {
-
-			// Trim leading and trailing whitespace
-			s := strings.TrimSpace(line.Text)
-
-			// Only accept lines with valid JSON
-			if json.Unmarshal([]byte(s), &v) == nil {
-
-				// Loop until line in sent to allow retries in the event of a failure
-				sent := false
-				for sent == false {
-					err := queue.Send(s)
-					if err != nil {
-						// Log error
-						log.Printf("Error sending to queue: %s [%d %s]", err.Error(), index, filename)
-						log.Printf("Sending queue restart request for [%d %s]", index, filename)
-
-						// Write our index to channel to request an SQS queue restart
-						ch <- index
-
-						// Wait 60 seconds before trying again
-						log.Printf("Sleeping for 60 seconds...")
-						time.Sleep(60 * time.Second)
-					} else {
-						sent = true
-					}
-				}
-			} else {
-				log.Printf("JSON validation failed, ignoring: %s [%d %s]", s, index, filename)
-			}
-		}
-
-		err = t.Wait()
-		if err != nil {
-			log.Printf("Wait error: %s [%d %s]", err.Error(), index, filename)
-			log.Printf("Sleeping for 60 seconds...")
-			time.Sleep(60 * time.Second)
 		}
 	}
 }
