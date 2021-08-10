@@ -19,6 +19,19 @@ This is an alpha release.
 6) Run 'systemctl daemon-reload'
 7) Run 'systemctl start log2sqs' to start the application
 
+### Apache2 Configuration
+
+To configure Apache2 to log in GELF format, add the following line to apache2.conf after other LogFormat lines:
+
+```
+LogFormat "{ \"version\": \"1.1\", \"host\": \"%V\", \"short_message\": \"%r\", \"timestamp\": %{%s}t, \"level\": 6, \"_user_agent\": \"%{User-Agent}i\", \"_src_ip\": \"%a\", \"_duration_usec\": %D, \"_duration_sec\": %T, \"_request_size_byte\": %O, \"_http_status_orig\": %s, \"_http_status\": %>s, \"_http_request_path\": \"%U\", \"_http_request\": \"%U%q\", \"_http_method\": \"%m\", \"_http_referer\": \"%{Referer}i\", \"_from_apache\": \"true\" }" GELF
+```
+Next, add or replace existing logging (typically within each vhost) using the GELF format defined above:
+
+```
+CustomLog ${APACHE_LOG_DIR}/access.gelf GELF
+```
+
 ### Copyright
 
 Copyright (c) 2021 Tenebris Technologies Inc. All rights reserved.
