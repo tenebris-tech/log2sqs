@@ -18,7 +18,7 @@ This is an alpha release.
 6) Update the configuration file (log2sqs.conf)
 7) Run 'systemctl daemon-reload'
 8) Run 'systemctl start log2sqs' to start the application
-9) Configure logrotated to locate the log file specified in log2sqs.conf
+9) Configure logrotated to locate the log file specified in log2sqs.conf. A sample rotate file is contained in log2sqs.txt. It can be copied to /etc/logrotate.d/log2sqs. It should be owned by root and set to mode 0644.
 
 ### Apache2 Configuration
 
@@ -36,5 +36,7 @@ CustomLog ${APACHE_LOG_DIR}/gelf.log GELF
 ### Copyright
 
 Copyright (c) 2021 Tenebris Technologies Inc. All rights reserved.
+
+Graylog is a trademark of Graylog, Inc.
 
 Please see the LICENSE file for additional information.

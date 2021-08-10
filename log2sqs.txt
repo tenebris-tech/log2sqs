@@ -1,0 +1,12 @@
+/var/log/log2sqs.log
+{
+        su root root
+        rotate 7
+        daily
+        copytruncate
+        missingok
+        notifempty
+        delaycompress
+        compress
+        create
+}
