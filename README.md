@@ -11,8 +11,7 @@ This is an alpha release.
 ### Installation
 
 1) Clone the repo and compile using "go build"
-2) Copy the binary (log2sqs) and config file (log2sqs.conf) to /opt/log2sqs. If you put it elsewhere you will need to
-   update the .service file.
+2) Copy the binary (log2sqs) and config file (log2sqs.conf) to /opt/log2sqs. If you put it elsewhere you will need to update the .service file.
 3) Ensure that log2sqs has the execution bit set (i.e. chmod 700 or 755)
 4) Copy log2sqs.service to /etc/systemd/system/
 5) Update the User and Group in log2sqs.service if you do not wish to run as root
