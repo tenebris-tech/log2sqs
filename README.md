@@ -13,11 +13,13 @@ This is an alpha release.
 1) Clone the repo and compile using "go build"
 2) Copy the binary (log2sqs) and config file (log2sqs.conf) to /opt/log2sqs. If you put it elsewhere you will need to
    update the .service file.
-3) Copy log2sqs.service to /etc/systemd/system/
-4) Update the User and Group in log2sqs.service if you do not wish to run as root
-5) Update the configuration file (log2sqs.conf)
-6) Run 'systemctl daemon-reload'
-7) Run 'systemctl start log2sqs' to start the application
+3) Ensure that log2sqs has the execution bit set (i.e. chmod 700 or 755)
+4) Copy log2sqs.service to /etc/systemd/system/
+5) Update the User and Group in log2sqs.service if you do not wish to run as root
+6) Update the configuration file (log2sqs.conf)
+7) Run 'systemctl daemon-reload'
+8) Run 'systemctl start log2sqs' to start the application
+9) Configure logrotated to locate the log file specified in log2sqs.conf
 
 ### Apache2 Configuration
 
@@ -29,7 +31,7 @@ LogFormat "{ \"version\": \"1.1\", \"host\": \"%V\", \"short_message\": \"%r\", 
 Next, add or replace existing logging (typically within each vhost) using the GELF format defined above:
 
 ```
-CustomLog ${APACHE_LOG_DIR}/access.gelf GELF
+CustomLog ${APACHE_LOG_DIR}/gelf.log GELF
 ```
 
 ### Copyright
