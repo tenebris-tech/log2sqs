@@ -2,6 +2,8 @@
 
 This application reads Graylog GELF-format messages from a text file and forwards them to an AWS SQS queue.
 
+It will optionally add AWS EC2 instance metadata (instance ID, hostname, and tags) to each log message.
+
 ### Development Status
 
 This is an alpha release.
