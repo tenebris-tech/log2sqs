@@ -16,7 +16,7 @@ import (
 )
 
 const ProductName = "log2sqs"
-const ProductVersion = "0.1.0"
+const ProductVersion = "0.1.1"
 
 // Map to store addFields for adding to log events
 var addFields = map[string]string{}
@@ -28,7 +28,7 @@ func main() {
 	var configFile = "log2sqs.conf"
 
 	// Add field to help track log2sqs version
-	addFields["_via"] = ProductName + " v" + ProductVersion
+	addFields["_via"] = ProductName + "-" + ProductVersion
 
 	// Check for path to config file as argument
 	if len(os.Args) > 1 {
