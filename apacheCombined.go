@@ -12,8 +12,8 @@ import (
 	"time"
 )
 
-// Parse Apache2 "combined" log format into object
-func parseCombined(s string, j arbitraryJSON) error {
+// Parse Apache/NGINX combined log format into object
+func apacheCombined(s string, j arbitraryJSON) error {
 
 	var buffer bytes.Buffer
 	buffer.WriteString(`^(\S+)\s`)                 // IP (1)
@@ -33,8 +33,7 @@ func parseCombined(s string, j arbitraryJSON) error {
 	result := re1.FindStringSubmatch(s)
 
 	if len(result) < 10 {
-		// Too few items found
-		return errors.New("error parsing Combined Log Format")
+		return errors.New("too few fields found")
 	}
 
 	// Parse time

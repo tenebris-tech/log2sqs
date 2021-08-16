@@ -4,7 +4,13 @@ This application reads one or more log files in real time (like tail) and forwar
 
 It will optionally add AWS EC2 instance metadata (instance ID, hostname, and tags) to each log message.
 
-Graylog GELF format messages (in JSON) and Apache2/NGINX combined log format messages are currently supported.
+The following formats are currently supported:
+
+| Format Specifier | Description                            |
+| ---------------- | -------------------------------------- |
+| gelf             | Graylog GELF format messages (in JSON) |
+| combined         | Apache2/NGINX combined log format      |
+| error            | Apache2 error log                      |
 
 ### Development Status
 

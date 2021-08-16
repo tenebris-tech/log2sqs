@@ -30,6 +30,7 @@ func tailFile(f config.InputFileDef, ch chan int) {
 		t, err := tail.TailFile(
 			f.Name,
 			tail.Config{Follow: true, ReOpen: true, Location: &tail.SeekInfo{Offset: 0, Whence: io.SeekEnd}})
+		//tail.Config{Follow: true, ReOpen: true})
 		if err != nil {
 			log.Printf("Error tailing file: %s [%d %s %s]", err.Error(), f.Index, f.Name, f.Type)
 			log.Printf("Sleeping for 60 seconds...")
@@ -55,9 +56,18 @@ func tailFile(f config.InputFileDef, ch chan int) {
 			case "combined":
 				// Apache/NGINX combined log format
 				j = arbitraryJSON{}
-				err := parseCombined(s, j)
+				err := apacheCombined(s, j)
 				if err != nil {
-					log.Printf("Error parsing Apache2 CLF: %s", err.Error())
+					log.Printf("Error parsing Apache combined log format: %s", err.Error())
+				} else {
+					send = true
+				}
+			case "error":
+				// Apache error log format
+				j = arbitraryJSON{}
+				err := apacheError(s, j)
+				if err != nil {
+					log.Printf("Error parsing Apache error log format: %s", err.Error())
 				} else {
 					send = true
 				}
