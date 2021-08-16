@@ -27,6 +27,9 @@ func main() {
 	// Default config file name
 	var configFile = "log2sqs.conf"
 
+	// Add field to help track log2sqs version
+	addFields["_via"] = ProductName + " v" + ProductVersion
+
 	// Check for path to config file as argument
 	if len(os.Args) > 1 {
 		configFile = os.Args[1]
