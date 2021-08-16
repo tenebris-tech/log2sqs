@@ -12,18 +12,25 @@ import (
 	"strings"
 )
 
+type InputFileDef struct {
+	Index int
+	Name  string
+	Type  string
+}
+
 var AWSID = ""
 var AWSKey = ""
 var AWSRegion = ""
 var AWSQueueName = ""
 var AddEC2Tags = false
 var LogFile = ""
-var InputFiles []string
+var InputFiles []InputFileDef
 
 func Load(filename string) error {
 	var item []string
 	var name string
 	var value string
+	var index = 0
 
 	file, err := os.Open(filename)
 	if err != nil {
@@ -79,13 +86,33 @@ func Load(filename string) error {
 			AddEC2Tags = string2bool(value)
 		case "inputfile":
 			// Append to list (slice)
-			InputFiles = append(InputFiles, value)
+			n, err := parseInputFile(value)
+			if err != nil {
+				tmp := fmt.Sprintf("error parsing config file: %s, %s", line, err.Error())
+				return errors.New(tmp)
+			} else {
+				index++
+				n.Index = index
+				InputFiles = append(InputFiles, n)
+			}
 		default:
 			tmp := fmt.Sprintf("error parsing config file: %s", line)
 			return errors.New(tmp)
 		}
 	}
 	return nil
+}
+
+// Parse input file into filename and type
+func parseInputFile(value string) (InputFileDef, error) {
+	var f InputFileDef
+	s := strings.Split(value, ",")
+	if len(s) != 2 {
+		return f, errors.New("invalid number of components")
+	}
+	f.Name = s[0]
+	f.Type = s[1]
+	return f, nil
 }
 
 // Return true if string is yes or true (case insensitive)

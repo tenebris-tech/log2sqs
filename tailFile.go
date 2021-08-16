@@ -6,7 +6,9 @@ package main
 
 import (
 	"encoding/json"
+	"io"
 	"log"
+	"log2sqs/config"
 	"strings"
 	"time"
 
@@ -15,19 +17,21 @@ import (
 	"github.com/tenebris-tech/tail"
 )
 
+type arbitraryJSON map[string]interface{}
+
 // Tail the file and write to the queue
-func tailFile(index int, filename string, ch chan int) {
+func tailFile(f config.InputFileDef, ch chan int) {
+	var send bool
+	var j arbitraryJSON
 
 	// Infinite loop to allow retry on error
 	for {
-
-		// Map for arbitrary JSON
-		var v map[string]interface{}
-
-		// Set up to tail the file
-		t, err := tail.TailFile(filename, tail.Config{Follow: true, ReOpen: true})
+		// Set up to tail the file, starting at the current end
+		t, err := tail.TailFile(
+			f.Name,
+			tail.Config{Follow: true, ReOpen: true, Location: &tail.SeekInfo{Offset: 0, Whence: io.SeekEnd}})
 		if err != nil {
-			log.Printf("Error tailing file: %s [%d %s]", err.Error(), index, filename)
+			log.Printf("Error tailing file: %s [%d %s %s]", err.Error(), f.Index, f.Name, f.Type)
 			log.Printf("Sleeping for 60 seconds...")
 			time.Sleep(60 * time.Second)
 		}
@@ -38,18 +42,43 @@ func tailFile(index int, filename string, ch chan int) {
 			// Trim leading and trailing whitespace
 			s := strings.TrimSpace(line.Text)
 
-			// Only accept lines with valid JSON
-			if json.Unmarshal([]byte(s), &v) == nil {
+			// Assume no data to send to queue
+			send = false
+
+			// Handle different file types here
+			switch strings.ToLower(f.Type) {
+			case "gelf":
+				// Unmarshal to verify JSON and allow adding fields
+				if json.Unmarshal([]byte(s), &j) == nil {
+					send = true
+				}
+			case "combined":
+				// Apache/NGINX combined log format
+				j = arbitraryJSON{}
+				err := parseCombined(s, j)
+				if err != nil {
+					log.Printf("Error parsing Apache2 CLF: %s", err.Error())
+				} else {
+					send = true
+				}
+			default:
+				// Should never get there, but just in case...
+				log.Printf("Unknown log file type [%d %s %s]", f.Index, f.Name, f.Type)
+			}
+
+			if send {
+				// Add filename
+				j["_log_file"] = f.Name
 
 				// Do we have addFields to add?
 				for key, value := range addFields {
-					v[key] = value
+					j[key] = value
 				}
 
 				// Marshal JSON for queue
-				jsonObj, err := json.Marshal(v)
+				jsonObj, err := json.Marshal(j)
 				if err != nil {
-					log.Printf("Failed to marshal JSON %s [%d %s]", err.Error(), index, filename)
+					log.Printf("Failed to marshal JSON %s [%d %s %s]", err.Error(), f.Index, f.Name, f.Type)
 					// Drop this log event
 					continue
 				}
@@ -60,11 +89,11 @@ func tailFile(index int, filename string, ch chan int) {
 					err := queue.Send(string(jsonObj))
 					if err != nil {
 						// Log error
-						log.Printf("Error sending to queue: %s [%d %s]", err.Error(), index, filename)
-						log.Printf("Sending queue restart request for [%d %s]", index, filename)
+						log.Printf("Error sending to queue: %s [%d %s %s]", err.Error(), f.Index, f.Name, f.Type)
+						log.Printf("Sending queue restart request for [%d %s %s]", f.Index, f.Name, f.Type)
 
 						// Write our index to channel to request an SQS queue restart
-						ch <- index
+						ch <- f.Index
 
 						// Wait 60 seconds before trying again
 						log.Printf("Sleeping for 60 seconds...")
@@ -72,15 +101,15 @@ func tailFile(index int, filename string, ch chan int) {
 					} else {
 						sent = true
 					}
-				}
+				} // send to queue loop
 			} else {
-				log.Printf("JSON validation failed, ignoring: %s [%d %s]", s, index, filename)
+				log.Printf("Validation failed, ignoring: %s [%d %s %s]", s, f.Index, f.Name, f.Type)
 			}
 		}
 
 		err = t.Wait()
 		if err != nil {
-			log.Printf("Wait error: %s [%d %s]", err.Error(), index, filename)
+			log.Printf("Wait error: %s [%d %s %s]", err.Error(), f.Index, f.Name, f.Type)
 			log.Printf("Sleeping for 60 seconds...")
 			time.Sleep(60 * time.Second)
 		}

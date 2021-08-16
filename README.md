@@ -1,8 +1,10 @@
 # log2sqs
 
-This application reads Graylog GELF format messages from a text file in real time (like tail) and forwards them to an AWS SQS queue.
+This application reads one or more log files in real time (like tail) and forwards them to an AWS SQS queue.
 
 It will optionally add AWS EC2 instance metadata (instance ID, hostname, and tags) to each log message.
+
+Graylog GELF format messages (in JSON) and Apache2/NGINX combined log format messages are currently supported.
 
 ### Development Status
 
@@ -20,23 +22,8 @@ This is an alpha release.
 8) Run 'systemctl start log2sqs' to start the application
 9) Configure logrotated to locate the log file specified in log2sqs.conf. A sample rotate file is contained in log2sqs.txt. It can be copied to /etc/logrotate.d/log2sqs. It should be owned by root and set to mode 0644.
 
-### Apache2 Configuration
-
-To configure Apache2 to log in GELF format, add the following line to apache2.conf after other LogFormat lines:
-
-```
-LogFormat "{ \"version\": \"1.1\", \"host\": \"%V\", \"short_message\": \"%r\", \"timestamp\": %{%s}t, \"level\": 6, \"_user_agent\": \"%{User-Agent}i\", \"_src_ip\": \"%a\", \"_duration_usec\": %D, \"_duration_sec\": %T, \"_request_size_byte\": %O, \"_http_status_orig\": %s, \"_http_status\": %>s, \"_http_request_path\": \"%U\", \"_http_request\": \"%U%q\", \"_http_method\": \"%m\", \"_http_referer\": \"%{Referer}i\", \"_from_apache\": \"true\" }" GELF
-```
-Next, add or replace existing logging (typically within each vhost) using the GELF format defined above:
-
-```
-CustomLog ${APACHE_LOG_DIR}/gelf.log GELF
-```
-
 ### Copyright
 
 Copyright (c) 2021 Tenebris Technologies Inc. All rights reserved.
-
-Graylog is a trademark of Graylog, Inc.
 
 Please see the LICENSE file for additional information.

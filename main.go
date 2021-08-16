@@ -16,7 +16,7 @@ import (
 )
 
 const ProductName = "log2sqs"
-const ProductVersion = "0.0.3"
+const ProductVersion = "0.1.0"
 
 // Map to store addFields for adding to log events
 var addFields = map[string]string{}
@@ -87,8 +87,8 @@ func main() {
 
 	// Iterate over list of files to monitor
 	// and launch a goroutine to handle for each
-	for i, inputFile := range config.InputFiles {
-		go tailFile(i, inputFile, ch)
+	for _, inputFile := range config.InputFiles {
+		go tailFile(inputFile, ch)
 	}
 
 	// Wait for signal or process to be killed and
@@ -97,7 +97,8 @@ func main() {
 		// Read message from channel
 		// This is a blocking function, but we're waiting anyway
 		msg := <-ch
-		log.Printf("Received queue restart request from worker %d [%s]", msg, config.InputFiles[msg])
+		log.Printf("Received queue restart request from worker %d [%s %s]",
+			msg, config.InputFiles[msg].Name, config.InputFiles[msg].Type)
 
 		// Open the SQS queue again
 		openQueue()
