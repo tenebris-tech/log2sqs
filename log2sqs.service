@@ -4,14 +4,15 @@
 [Unit]
 Description=Log to SQS
 After=network.target
+StartLimitIntervalSec=0
 
 [Service]
 WorkingDirectory=/opt/log2sqs
 User=root
 Group=root
 Restart=always
+RestartSec=1
 ExecStart=/opt/log2sqs/log2sqs /opt/log2sqs/log2sqs.conf
 
 [Install]
 WantedBy=multi-user.target
-Alias=log2sqs.service
