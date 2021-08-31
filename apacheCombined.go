@@ -51,8 +51,8 @@ func apacheCombined(s string, j arbitraryJSON) error {
 	j["_src_ip"] = result[1]
 	j["_user"] = result[3]
 	j["_http_request"] = result[5]
-	j["_http_status"] = result[6]
-	j["_http_response_size"] = result[7]
+	j["_http_status"] = string2Int(result[6])
+	j["_http_response_size"] = string2Int(result[7])
 	j["_http_referer"] = result[8]
 	j["_user_agent"] = result[9]
 	return nil

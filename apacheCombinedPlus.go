@@ -25,12 +25,11 @@ func apacheCombinedPlus(s string, j arbitraryJSON) error {
 	buffer.WriteString(`(\S+)\s`)                  // status code (6)
 	buffer.WriteString(`(\S+)\s`)                  // size (7)
 	buffer.WriteString(`"((?:[^"]*(?:\\")?)*)"\s`) // referrer (8)
-	//buffer.WriteString(`"(.*)"$`)                   // user agent (9)
-	buffer.WriteString(`"(.*?)"\s`) // user agent (9)
-	buffer.WriteString(`(\S+)\s`)   // processing time (10)
-	buffer.WriteString(`"(.*?)"\s`) // request method (11)
-	buffer.WriteString(`"(.*?)"\s`) // request path (12)
-	buffer.WriteString(`"(.*?)"$`)  // request query (13)
+	buffer.WriteString(`"(.*?)"\s`)                // user agent (9)
+	buffer.WriteString(`(\S+)\s`)                  // processing time (10)
+	buffer.WriteString(`"(.*?)"\s`)                // request method (11)
+	buffer.WriteString(`"(.*?)"\s`)                // request path (12)
+	buffer.WriteString(`"(.*?)"$`)                 // request query (13)
 
 	re1, err := regexp.Compile(buffer.String())
 	if err != nil {
@@ -57,13 +56,13 @@ func apacheCombinedPlus(s string, j arbitraryJSON) error {
 	j["_src_ip"] = result[1]
 	j["_user"] = result[3]
 	j["_http_request"] = result[5]
-	j["_http_status"] = result[6]
-	j["_http_response_size"] = result[7]
+	j["_http_status"] = string2Int(result[6])
+	j["_http_response_size"] = string2Int(result[7])
 	j["_http_referer"] = result[8]
 	j["_user_agent"] = result[9]
-	j["_duration_usec"] = result[10]
-	j["_request_method"] = result[11]
-	j["_request_path"] = result[12]
-	j["_request_query"] = result[13]
+	j["_duration_usec"] = string2Int(result[10])
+	j["_request_method"] = emptyString(result[11])
+	j["_request_path"] = emptyString(result[12])
+	j["_request_query"] = emptyString(result[13])
 	return nil
 }
