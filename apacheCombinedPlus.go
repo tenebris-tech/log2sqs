@@ -61,8 +61,8 @@ func apacheCombinedPlus(s string, j arbitraryJSON) error {
 	j["_http_referer"] = result[8]
 	j["_user_agent"] = result[9]
 	j["_duration_usec"] = string2Int(result[10])
-	j["_request_method"] = emptyString(result[11])
-	j["_request_path"] = emptyString(result[12])
-	j["_request_query"] = emptyString(result[13])
+	j["_http_request_method"] = emptyString(result[11])
+	j["_http_request_path"] = emptyString(result[12])
+	j["_http_request_query"] = emptyString(result[13])
 	return nil
 }

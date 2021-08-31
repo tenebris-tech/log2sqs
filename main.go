@@ -16,7 +16,7 @@ import (
 )
 
 const ProductName = "log2sqs"
-const ProductVersion = "0.1.4"
+const ProductVersion = "0.1.5"
 
 // Map to store addFields for adding to log events
 var addFields = map[string]string{}
