@@ -58,7 +58,16 @@ func tailFile(f config.InputFileDef, ch chan int) {
 				j = arbitraryJSON{}
 				err := apacheCombined(s, j)
 				if err != nil {
-					log.Printf("Error parsing Apache combined log format: %s", err.Error())
+					log.Printf("Error parsing combined log format: %s", err.Error())
+				} else {
+					send = true
+				}
+			case "combinedplus":
+				// Apache combined log format with additional fields
+				j = arbitraryJSON{}
+				err := apacheCombinedPlus(s, j)
+				if err != nil {
+					log.Printf("Error parsing combinedplus log format: %s", err.Error())
 				} else {
 					send = true
 				}

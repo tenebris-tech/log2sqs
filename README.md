@@ -6,11 +6,20 @@ It will optionally add AWS EC2 instance metadata (instance ID, hostname, and tag
 
 The following formats are currently supported:
 
-| Format Specifier | Description                            |
-| ---------------- | -------------------------------------- |
-| gelf             | Graylog GELF format messages (in JSON) |
-| combined         | Apache2/NGINX combined log format      |
-| error            | Apache2 error log                      |
+| Format Specifier | Description                               |
+| ---------------- | ----------------------------------------- |
+| gelf             | Graylog GELF format messages (in JSON)    |
+| error            | Apache2 error log                         |
+| combined         | Apache2/NGINX combined log format         |
+| combinedplus     | Apache2 log format with additional fields |
+
+For the combinedplus format, the following Apache definition is used
+to add the time (in microseconds) required to process the request and
+break the request into method, path, and query components.
+
+```
+LogFormat "%h %l %u %t \"%r\" %>s %O \"%{Referer}i\" \"%{User-Agent}i\" %D \"%m\" \"%U\" \"%q\"" combinedplus
+```
 
 ### Development Status
 
