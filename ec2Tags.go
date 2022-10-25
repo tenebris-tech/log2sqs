@@ -1,18 +1,20 @@
 //
-// Copyright (c) 2021 Tenebris Technologies Inc.
+// Copyright (c) 2021-2022 Tenebris Technologies Inc.
 //
 
 package main
 
 import (
+	"io/ioutil"
+	"log"
+	"net/http"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ec2"
-	"io/ioutil"
-	"log"
+
 	"log2sqs/config"
-	"net/http"
 )
 
 func ec2Tags() {
