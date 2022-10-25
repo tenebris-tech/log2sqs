@@ -23,7 +23,7 @@ LogFormat "%h %l %u %t \"%r\" %>s %O \"%{Referer}i\" \"%{User-Agent}i\" %D \"%m\
 
 ### Development Status
 
-This is an alpha release.
+This is an beta release.
 
 ### Installation
 
@@ -41,6 +41,6 @@ This is an alpha release.
 
 ### Copyright
 
-Copyright (c) 2021 Tenebris Technologies Inc. All rights reserved.
+Copyright (c) 2021-2022 Tenebris Technologies Inc. All rights reserved.
 
 Please see the LICENSE file for additional information.
