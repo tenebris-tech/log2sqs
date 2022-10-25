@@ -44,7 +44,7 @@ func ec2Tags() {
 	// Get hostname
 	resp, err = http.Get("http://169.254.169.254/latest/meta-data/hostname")
 	if err != nil {
-		log.Printf("Error retriving EC2 hostname")
+		log.Printf("Error retrieving EC2 hostname")
 		return
 	}
 
