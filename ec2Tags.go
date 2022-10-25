@@ -5,7 +5,7 @@
 package main
 
 import (
-	"io/ioutil"
+	"io"
 	"log"
 	"net/http"
 
@@ -31,7 +31,7 @@ func ec2Tags() {
 		return
 	}
 
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		log.Printf("Error reading HTTP response for EC2 instance ID")
 		return
@@ -48,7 +48,7 @@ func ec2Tags() {
 		return
 	}
 
-	body, err = ioutil.ReadAll(resp.Body)
+	body, err = io.ReadAll(resp.Body)
 	if err != nil {
 		log.Printf("Error reading HTTP response for EC2 hostname")
 		return
