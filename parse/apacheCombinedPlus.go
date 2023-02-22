@@ -1,20 +1,21 @@
 //
-// Copyright (c) 2021 Tenebris Technologies Inc.
+// Copyright (c) 2021-2023 Tenebris Technologies Inc.
 //
 
-package main
+package parse
 
 import (
 	"bytes"
 	"errors"
-	"os"
 	"regexp"
 	"time"
+
+	"log2sqs/config"
 )
 
-// Parse Apache combined log format with additional fields
+// ApacheCombinedPlus parses Apache/NGINX combined log format into a GELF message with additional fields
 // LogFormat "%h %l %u %t \"%r\" %>s %O \"%{Referer}i\" \"%{User-Agent}i\" %D \"%m\" \"%U\" \"%q\"" combinedplus
-func apacheCombinedPlus(s string, j arbitraryJSON) error {
+func ApacheCombinedPlus(s string, g GELFMessage) error {
 
 	var buffer bytes.Buffer
 	buffer.WriteString(`^(\S+)\s`)                 // IP (1)
@@ -49,20 +50,21 @@ func apacheCombinedPlus(s string, j arbitraryJSON) error {
 	}
 
 	// Create GELF message
-	j["version"] = "1.1"
-	j["host"], _ = os.Hostname()
-	j["short_message"] = result[5]
-	j["timestamp"] = t.Unix()
-	j["_src_ip"] = result[1]
-	j["_user"] = result[3]
-	j["_http_request"] = result[5]
-	j["_http_status"] = string2Int(result[6])
-	j["_http_response_size"] = string2Int(result[7])
-	j["_http_referer"] = result[8]
-	j["_user_agent"] = result[9]
-	j["_duration_usec"] = string2Int(result[10])
-	j["_http_request_method"] = emptyString(result[11])
-	j["_http_request_path"] = emptyString(result[12])
-	j["_http_request_query"] = emptyString(result[13])
+	g["version"] = "1.1"
+	g["host"] = config.Hostname
+	g["short_message"] = result[5]
+	g["timestamp"] = t.Unix()
+	g["_src_ip"] = result[1]
+	g["_user"] = result[3]
+	g["_http_request"] = result[5]
+	g["_http_status"] = String2Int(result[6])
+	g["_http_response_size"] = String2Int(result[7])
+	g["_http_referer"] = result[8]
+	g["_user_agent"] = result[9]
+	g["_duration_usec"] = String2Int(result[10])
+	g["_http_request_method"] = EmptyString(result[11])
+	g["_http_request_path"] = EmptyString(result[12])
+	g["_http_request_query"] = EmptyString(result[13])
+	g["_original_format"] = "ApacheCombinedPlus"
 	return nil
 }

@@ -1,22 +1,23 @@
 //
-// Copyright (c) 2021 Tenebris Technologies Inc.
+// Copyright (c) 2021-2023 Tenebris Technologies Inc.
 //
 
-package main
+package parse
 
 import (
 	"bytes"
 	"errors"
 	"fmt"
-	"os"
 	"regexp"
 	"strings"
 	"time"
+
+	"log2sqs/config"
 )
 
-// Parse Apache2 error log format into object
-func apacheError(s string, j arbitraryJSON) error {
-	fmt.Println(s)
+// ApacheError parses Apache2 error log format into a GELF message
+func ApacheError(s string, g GELFMessage) error {
+
 	var buffer bytes.Buffer
 	buffer.WriteString(`\[([^]]+)\]\s`) // date, time(1)
 	buffer.WriteString(`\[([^]]+)\]\s`) // module:level (2)
@@ -59,12 +60,13 @@ func apacheError(s string, j arbitraryJSON) error {
 	}
 
 	// Create GELF message
-	j["version"] = "1.1"
-	j["host"], _ = os.Hostname()
-	j["short_message"] = result[4]
-	j["timestamp"] = t.Unix()
-	j["_apache_pid"] = result[3]
-	j["_apache_module"] = module
-	j["_apache_level"] = level
+	g["version"] = "1.1"
+	g["host"] = config.Hostname
+	g["short_message"] = result[4]
+	g["timestamp"] = t.Unix()
+	g["_apache_pid"] = result[3]
+	g["_apache_module"] = module
+	g["_apache_level"] = level
+	g["_original_format"] = "ApacheError"
 	return nil
 }

@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2021 Tenebris Technologies Inc.
+// Copyright (c) 2021-2023 Tenebris Technologies Inc.
 //
 
 package main
@@ -8,21 +8,20 @@ import (
 	"encoding/json"
 	"io"
 	"log"
-	"log2sqs/config"
 	"strings"
 	"time"
 
-	"log2sqs/queue"
-
 	"github.com/tenebris-tech/tail"
+
+	"log2sqs/config"
+	"log2sqs/event"
+	"log2sqs/parse"
 )
 
-type arbitraryJSON map[string]interface{}
-
 // Tail the file and write to the queue
-func tailFile(f config.InputFileDef, ch chan int) {
+func tailFile(f config.InputFileDef) {
 	var send bool
-	var j arbitraryJSON
+	var g parse.GELFMessage
 
 	// Infinite loop to allow retry on error
 	for {
@@ -39,6 +38,7 @@ func tailFile(f config.InputFileDef, ch chan int) {
 
 		// Loop and read
 		for line := range t.Lines {
+			g = parse.GELFMessage{}
 
 			// Trim leading and trailing whitespace
 			s := strings.TrimSpace(line.Text)
@@ -50,36 +50,45 @@ func tailFile(f config.InputFileDef, ch chan int) {
 			switch strings.ToLower(f.Type) {
 			case "gelf":
 				// Unmarshal to verify JSON and allow adding fields
-				if json.Unmarshal([]byte(s), &j) == nil {
+				if json.Unmarshal([]byte(s), &g) == nil {
 					send = true
 				}
+
+			case "text":
+				err := parse.PlainText(s, g)
+				if err != nil {
+					log.Printf("Error parsing text log format: %s", err.Error())
+				} else {
+					send = true
+				}
+
 			case "combined":
 				// Apache/NGINX combined log format
-				j = arbitraryJSON{}
-				err := apacheCombined(s, j)
+				err := parse.ApacheCombined(s, g)
 				if err != nil {
 					log.Printf("Error parsing combined log format: %s", err.Error())
 				} else {
 					send = true
 				}
+
 			case "combinedplus":
 				// Apache combined log format with additional fields
-				j = arbitraryJSON{}
-				err := apacheCombinedPlus(s, j)
+				err := parse.ApacheCombinedPlus(s, g)
 				if err != nil {
 					log.Printf("Error parsing combinedplus log format: %s", err.Error())
 				} else {
 					send = true
 				}
+
 			case "error":
 				// Apache error log format
-				j = arbitraryJSON{}
-				err := apacheError(s, j)
+				err := parse.ApacheError(s, g)
 				if err != nil {
 					log.Printf("Error parsing Apache error log format: %s", err.Error())
 				} else {
 					send = true
 				}
+
 			default:
 				// Should never get there, but just in case...
 				log.Printf("Unknown log file type [%d %s %s]", f.Index, f.Name, f.Type)
@@ -87,36 +96,31 @@ func tailFile(f config.InputFileDef, ch chan int) {
 
 			if send {
 				// Add filename
-				j["_log_file"] = f.Name
+				g["_log_file"] = f.Name
 
 				// Do we have addFields to add?
-				for key, value := range addFields {
-					j[key] = value
+				for key, value := range config.AddFields {
+					g[key] = value
 				}
 
 				// Marshal JSON for queue
-				jsonObj, err := json.Marshal(j)
+				gBytes, err := json.Marshal(g)
 				if err != nil {
 					log.Printf("Failed to marshal JSON %s [%d %s %s]", err.Error(), f.Index, f.Name, f.Type)
 					// Drop this log event
 					continue
 				}
 
-				// Loop until line in sent to allow retries in the event of a failure
+				// Loop until line is sent to allow retries in the event of a failure
+				// Since these are log files, there is no need to buffer them in memory
 				sent := false
 				for sent == false {
-					err := queue.Send(string(jsonObj))
+					err := event.Send(gBytes)
 					if err != nil {
 						// Log error
 						log.Printf("Error sending to queue: %s [%d %s %s]", err.Error(), f.Index, f.Name, f.Type)
-						log.Printf("Sending queue restart request for [%d %s %s]", f.Index, f.Name, f.Type)
-
-						// Write our index to channel to request an SQS queue restart
-						ch <- f.Index
-
-						// Wait 60 seconds before trying again
-						log.Printf("Sleeping for 60 seconds...")
-						time.Sleep(60 * time.Second)
+						log.Printf("Sleeping for 30 seconds...")
+						time.Sleep(30 * time.Second)
 					} else {
 						sent = true
 					}

@@ -1,17 +1,35 @@
 # log2sqs
 
-This application reads one or more log files in real time (like tail) and forwards them to an AWS SQS queue.
+This application facilitates distributed log collection in Graylog GELF via an AWS SQS queue. Communication with
+SQS is over HTTPS, providing a relatively secure log collection mechanism.
 
-It will optionally add AWS EC2 instance metadata (instance ID, hostname, and tags) to each log message.
+For use on an AWS EC2 VM, providing access to SQS via an IAM role assigned to the EC2 instance is recommended.
 
-The following formats are currently supported:
+For logging from non-AWS environments, an AWS IAM key must be added to the configuration file. The policy assigned
+to the IAM user should only allow listing queues and write access to the single required SQS queue.
+
+An open source application to read the SQS queue and send events to Graylog is available at
+https://github.com/tenebris-tech/sqs2gl.
+
+This application can:
+
+- Read one or more log files in real time (like tail) and forward them in GELF to an AWS SQS queue.
+
+- Receive RFC5424 and RFC3164 compliant syslog messages via UDP, parse them, and forward them to the 
+AWS SQS queue in GELF. If the type of syslog message can not be identified, or if parsing fails, the
+message is forwarded as-is. Parsing errors are reported via GELF to assist in debugging (this is a work in progress).
+
+- Optionally add AWS EC2 instance metadata (instance ID, hostname, and tags) to each event.
+
+The following log file formats are currently supported:
 
 | Format Specifier | Description                               |
-| ---------------- | ----------------------------------------- |
+|------------------|-------------------------------------------|
 | gelf             | Graylog GELF format messages (in JSON)    |
 | error            | Apache2 error log                         |
 | combined         | Apache2/NGINX combined log format         |
 | combinedplus     | Apache2 log format with additional fields |
+| text             | Plain text, not parsed                    |
 
 For the combinedplus format, the following Apache definition is used
 to add the time (in microseconds) required to process the request and
@@ -23,9 +41,9 @@ LogFormat "%h %l %u %t \"%r\" %>s %O \"%{Referer}i\" \"%{User-Agent}i\" %D \"%m\
 
 ### Development Status
 
-This is an beta release.
+This is a beta release.
 
-### Installation
+### Linux Installation
 
 1) Clone the repo and compile using "go build"
 2) Copy the binary (log2sqs) and config file (log2sqs.conf) to /opt/log2sqs. If you put it elsewhere you will need to
@@ -39,8 +57,12 @@ This is an beta release.
 9) Configure logrotated to locate the log file specified in log2sqs.conf. A sample rotate file is contained in
    log2sqs.txt. It can be copied to /etc/logrotate.d/log2sqs. It should be owned by root and set to mode 0644.
 
+### Windows Installation
+
+The application has been tested on Windows, but there is currently no demand for it to run as a Windows service.
+
 ### Copyright
 
-Copyright (c) 2021-2022 Tenebris Technologies Inc. All rights reserved.
+Copyright (c) 2021-2023 Tenebris Technologies Inc. All rights reserved.
 
 Please see the LICENSE file for additional information.

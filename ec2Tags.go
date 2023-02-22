@@ -37,7 +37,7 @@ func ec2Tags() {
 		return
 	} else {
 		instanceID = string(body)
-		addFields["_ec2_instanceID"] = instanceID
+		config.AddFields["_ec2_instanceID"] = instanceID
 	}
 	_ = resp.Body.Close()
 
@@ -53,7 +53,7 @@ func ec2Tags() {
 		log.Printf("Error reading HTTP response for EC2 hostname")
 		return
 	} else {
-		addFields["_ec2_hostname"] = string(body)
+		config.AddFields["_ec2_hostname"] = string(body)
 	}
 	_ = resp.Body.Close()
 
@@ -99,7 +99,7 @@ func ec2Tags() {
 	// Iterate over EC2 tags and add to addFields[]
 	for _, tag := range ec2Info.Tags {
 		if tag.Key != nil && tag.Value != nil {
-			addFields["_ec2_tag_"+*tag.Key] = *tag.Value
+			config.AddFields["_ec2_tag_"+*tag.Key] = *tag.Value
 		}
 	}
 }

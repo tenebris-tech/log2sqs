@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2021 Tenebris Technologies Inc.
+// Copyright (c) 2021-2023 Tenebris Technologies Inc.
 //
 
 package config
@@ -9,6 +9,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"strconv"
 	"strings"
 )
 
@@ -18,19 +19,34 @@ type InputFileDef struct {
 	Type  string
 }
 
+var Debug = false
 var AWSID = ""
 var AWSKey = ""
 var AWSRegion = ""
 var AWSQueueName = ""
 var AddEC2Tags = false
 var LogFile = ""
+var Hostname = ""
+var SyslogUDP = ""
+var SyslogUDPMax = 2048
+var SyslogFullMessage = false
+var SyslogOverrideTime = false
+var EventBuffer = 4096
 var InputFiles []InputFileDef
+var AddFields = map[string]string{}
 
 func Load(filename string) error {
 	var item []string
 	var name string
 	var value string
 	var index = 0
+	var err error
+
+	// Set default
+	Hostname, err = os.Hostname()
+	if err != nil {
+		Hostname = ""
+	}
 
 	file, err := os.Open(filename)
 	if err != nil {
@@ -72,6 +88,8 @@ func Load(filename string) error {
 		value = strings.TrimSpace(item[1])
 
 		switch name {
+		case "debug":
+			Debug = string2bool(value)
 		case "logfile":
 			LogFile = value
 		case "awsid":
@@ -95,6 +113,26 @@ func Load(filename string) error {
 				n.Index = index
 				InputFiles = append(InputFiles, n)
 			}
+		case "hostname":
+			Hostname = value
+		case "site":
+			AddFields["_site"] = value
+		case "syslogudp":
+			SyslogUDP = value
+		case "syslogudpmax":
+			tmp := string2int(value)
+			if tmp > 0 {
+				SyslogUDPMax = tmp
+			}
+		case "syslogfullmessage":
+			SyslogFullMessage = string2bool(value)
+		case "syslogoverridetime":
+			SyslogOverrideTime = string2bool(value)
+		case "eventbuffer":
+			tmp := string2int(value)
+			if tmp > 0 {
+				EventBuffer = tmp
+			}
 		default:
 			tmp := fmt.Sprintf("error parsing config file: %s", line)
 			return errors.New(tmp)
@@ -108,16 +146,15 @@ func parseInputFile(value string) (InputFileDef, error) {
 	var f InputFileDef
 	s := strings.Split(value, ",")
 	if len(s) != 2 {
-		return f, errors.New("invalid number of components")
+		return f, errors.New("must have two elements (path and type)")
 	}
 	f.Name = s[0]
 	f.Type = s[1]
 	return f, nil
 }
 
-// Return true if string is yes or true (case insensitive)
+// Return true if string is yes or true (case-insensitive)
 func string2bool(s string) bool {
-
 	if strings.ToLower(s) == "yes" {
 		return true
 	}
@@ -127,4 +164,13 @@ func string2bool(s string) bool {
 	}
 
 	return false
+}
+
+// Return integer contained in string or 0
+func string2int(s string) int {
+	ret, err := strconv.Atoi(s)
+	if err != nil {
+		ret = 0
+	}
+	return ret
 }

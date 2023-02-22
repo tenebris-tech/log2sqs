@@ -1,34 +1,26 @@
 //
-// Copyright (c) 2021 Tenebris Technologies Inc.
+// Copyright (c) 2021-2023 Tenebris Technologies Inc.
 //
 
 package main
 
 import (
+	"fmt"
 	"log"
+	"log2sqs/global"
 	"os"
 	"os/signal"
 	"syscall"
-	"time"
 
 	"log2sqs/config"
-	"log2sqs/queue"
+	"log2sqs/event"
+	"log2sqs/syslog"
 )
 
-const ProductName = "log2sqs"
-const ProductVersion = "0.1.7"
-
-// Map to store addFields for adding to log events
-var addFields = map[string]string{}
-
-// main entry point
 func main() {
 
 	// Default config file name
 	var configFile = "log2sqs.conf"
-
-	// Add field to help track log2sqs version
-	addFields["_via"] = ProductName + "-" + ProductVersion
 
 	// Check for path to config file as argument
 	if len(os.Args) > 1 {
@@ -55,9 +47,13 @@ func main() {
 		log.Fatal(err.Error())
 	}
 
+	// Add field to report application name and version
+	config.AddFields["_via_app"] = global.ProductName + " " + global.ProductVersion
+
 	// Set up logging
 	if config.LogFile != "" {
 		f, err := os.OpenFile(config.LogFile, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+
 		// If unable to open log file, report error, but continue writing logs to stderr
 		if err != nil {
 			log.Printf("Error opening log file: %s", err.Error())
@@ -69,69 +65,35 @@ func main() {
 		}
 	}
 
-	log.Printf("Starting %s %s", ProductName, ProductVersion)
-
 	// Retrieve EC2 addFields if necessary
 	if config.AddEC2Tags {
 		ec2Tags()
 	}
 
-	// Log fields to be added
-	for key, value := range addFields {
-		log.Printf("Adding field %s=%s", key, value)
-	}
+	// Initialize and start queues
+	event.Start()
 
-	// Open the SQS queue
-	openQueue()
-
-	// Create buffered channel to allow queue failure notification and restart request
-	// Capacity is set high to avoid blocking.
-	ch := make(chan int, 1024)
+	// Send log event
+	event.Log(fmt.Sprintf("Starting %s %s", global.ProductName, global.ProductVersion), "", global.INFO)
 
 	// Iterate over list of files to monitor
-	// and launch a goroutine to handle for each
+	// and launch a goroutine to handle each
 	for _, inputFile := range config.InputFiles {
-		go tailFile(inputFile, ch)
+		go tailFile(inputFile)
 	}
 
-	// Wait for signal or process to be killed and
-	// handle any messages on channel
-	for {
-		// Read message from channel
-		// This is a blocking function, but we're waiting anyway
-		msg := <-ch
-		log.Printf("Received queue restart request from worker %d [%s %s]",
-			msg, config.InputFiles[msg].Name, config.InputFiles[msg].Type)
-
-		// Open the SQS queue again
-		openQueue()
-
-		// Drain the channel to avoid duplicates
-		for len(ch) > 0 {
-			_ = <-ch
-		}
+	// Start Syslog UDP if configured
+	if config.SyslogUDP != "" {
+		go syslog.UDP()
 	}
-}
 
-// Open the SQS queue
-func openQueue() {
-
-	// Initialize queue - retry indefinitely until success
-	for {
-		err := queue.Open()
-		if err != nil {
-			log.Printf("Error opening queue: %s", err.Error())
-			log.Printf("Sleeping for 60 seconds...")
-			time.Sleep(60 * time.Second)
-		} else {
-			log.Printf("SQS queue %s opened", config.AWSQueueName)
-			return
-		}
-	}
+	// Wait for signal or process to be killed
+	//goland:noinspection GoInfiniteFor
+	select {}
 }
 
 // Graceful exit
 func appCleanup(sig os.Signal) {
-	log.Printf("Exiting on signal: %v", sig)
+	event.Log(fmt.Sprintf("Exiting on signal: %v", sig), "", global.NOTICE)
 	os.Exit(0)
 }

@@ -1,19 +1,20 @@
 //
-// Copyright (c) 2021 Tenebris Technologies Inc.
+// Copyright (c) 2021-2023 Tenebris Technologies Inc.
 //
 
-package main
+package parse
 
 import (
 	"bytes"
 	"errors"
-	"os"
 	"regexp"
 	"time"
+
+	"log2sqs/config"
 )
 
-// Parse Apache/NGINX combined log format into object
-func apacheCombined(s string, j arbitraryJSON) error {
+// ApacheCombined parses Apache/NGINX combined log format into a GELF message
+func ApacheCombined(s string, g GELFMessage) error {
 
 	var buffer bytes.Buffer
 	buffer.WriteString(`^(\S+)\s`)                 // IP (1)
@@ -44,16 +45,17 @@ func apacheCombined(s string, j arbitraryJSON) error {
 	}
 
 	// Create GELF message
-	j["version"] = "1.1"
-	j["host"], _ = os.Hostname()
-	j["short_message"] = result[5]
-	j["timestamp"] = t.Unix()
-	j["_src_ip"] = result[1]
-	j["_user"] = result[3]
-	j["_http_request"] = result[5]
-	j["_http_status"] = string2Int(result[6])
-	j["_http_response_size"] = string2Int(result[7])
-	j["_http_referer"] = result[8]
-	j["_user_agent"] = result[9]
+	g["version"] = "1.1"
+	g["host"] = config.Hostname
+	g["short_message"] = result[5]
+	g["timestamp"] = t.Unix()
+	g["_src_ip"] = result[1]
+	g["_user"] = result[3]
+	g["_http_request"] = result[5]
+	g["_http_status"] = String2Int(result[6])
+	g["_http_response_size"] = String2Int(result[7])
+	g["_http_referer"] = result[8]
+	g["_user_agent"] = result[9]
+	g["_original_format"] = "ApacheCombined"
 	return nil
 }

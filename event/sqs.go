@@ -1,26 +1,47 @@
 //
-// Copyright (c) 2021 Tenebris Technologies Inc.
+// Copyright (c) 2021-2023 Tenebris Technologies Inc.
 //
 
-package queue
+package event
 
 import (
 	"errors"
 	"fmt"
+	"log"
 	"strings"
-
-	"log2sqs/config"
+	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/sqs"
+
+	"log2sqs/config"
 )
 
 var q *sqs.SQS
 var qURL = ""
 
-func Open() error {
+// Buffered channel to trigger SQS reconnection
+var sqsRestart = make(chan int, 1024)
+
+// Open the SQS queue. Block until success because there is no point reading logs if
+// there is nowhere to send them.
+func openSQS() {
+	for {
+		err := connectSQS()
+		if err != nil {
+			log.Printf("Error opening queue: %s", err.Error())
+			log.Printf("Sleeping for 30 seconds...")
+			time.Sleep(30 * time.Second)
+		} else {
+			log.Printf("SQS queue %s opened", config.AWSQueueName)
+			return
+		}
+	}
+}
+
+func connectSQS() error {
 	var awsCredentials *credentials.Credentials
 	var awsConfig *aws.Config
 
@@ -67,4 +88,44 @@ func Open() error {
 	}
 
 	return nil
+}
+
+func sendSQS(msg []byte) error {
+
+	//global.JSONPretty(msg) // For debugging only
+
+	// Set up parameters
+	var sendParams *sqs.SendMessageInput
+	sendParams = &sqs.SendMessageInput{
+		MessageBody: aws.String(string(msg)),
+		QueueUrl:    aws.String(qURL),
+	}
+
+	// Send to SQS
+	_, err := q.SendMessage(sendParams)
+	if err != nil {
+		// Request reconnection
+		sqsRestart <- 1
+		return err
+	}
+
+	return nil
+}
+
+// watchSQS waits for reconnection attempts and actions them
+func watchSQS() {
+	for {
+		// Read message from channel
+		// This is a blocking function
+		_ = <-sqsRestart
+		log.Printf("Received SQS reconnection request")
+
+		// Open the SQS queue again
+		openSQS()
+
+		// Drain the channel to avoid unnecessary restarts
+		for len(sqsRestart) > 0 {
+			_ = <-sqsRestart
+		}
+	}
 }

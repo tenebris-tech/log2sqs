@@ -3,13 +3,14 @@ module log2sqs
 go 1.19
 
 require (
-	github.com/aws/aws-sdk-go v1.44.123
-	github.com/tenebris-tech/tail v1.0.4
+	github.com/aws/aws-sdk-go v1.44.204
+	github.com/jeromer/syslogparser v1.1.0
+	github.com/tenebris-tech/tail v1.0.5
 )
 
 require (
+	github.com/fsnotify/fsnotify v1.6.0 // indirect
 	github.com/jmespath/go-jmespath v0.4.0 // indirect
-	golang.org/x/sys v0.1.0 // indirect
-	gopkg.in/fsnotify/fsnotify.v1 v1.4.7 // indirect
+	golang.org/x/sys v0.5.0 // indirect
 	gopkg.in/tomb.v1 v1.0.0-20141024135613-dd632973f1e7 // indirect
 )
