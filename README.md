@@ -52,9 +52,10 @@ This is a beta release.
 4) Copy log2sqs.service to /etc/systemd/system/
 5) Update the User and Group in log2sqs.service if you do not wish to run as root
 6) Update the configuration file (log2sqs.conf)
-7) Run 'systemctl daemon-reload'
-8) Run 'systemctl start log2sqs' to start the application
-9) Configure logrotated to locate the log file specified in log2sqs.conf. A sample rotate file is contained in
+7) Run `systemctl daemon-reload`
+8) Run `systemctl enable log2sqs` to configure automatic start at boot
+9) Run `systemctl start log2sqs` to start the application
+10) Configure logrotated to locate the log file specified in log2sqs.conf. A sample rotate file is contained in
    log2sqs.txt. It can be copied to /etc/logrotate.d/log2sqs. It should be owned by root and set to mode 0644.
 
 ### Windows Installation
