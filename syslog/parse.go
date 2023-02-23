@@ -47,13 +47,18 @@ func parseSyslog(buf []byte, srcIP string, g parse.GELFMessage) error {
 		g["version"] = "1.1"
 		g["_via_hostname"] = config.Hostname
 		g["_via_proto"] = "syslog_udp"
-		g["_source_ip"] = srcIP
 		g["host"] = eventMap["hostname"]
 		g["level"] = eventMap["severity"]
 		g["_facility"] = global.GetFacility(eventMap["facility"].(int))
 		g["_app_name"] = eventMap["tag"]
 		g["short_message"] = strings.TrimSuffix(fmt.Sprint(eventMap["content"]), "\n")
 		g["_original_format"] = "RFC3164"
+
+		if config.SyslogOverrideSourceIP != "" {
+			g["_source_ip"] = config.SyslogOverrideSourceIP
+		} else {
+			g["_source_ip"] = srcIP
+		}
 
 		if config.SyslogOverrideTime {
 			g["timestamp"] = time.Now().Unix()
@@ -85,7 +90,6 @@ func parseSyslog(buf []byte, srcIP string, g parse.GELFMessage) error {
 		g["version"] = "1.1"
 		g["_via_hostname"] = config.Hostname
 		g["_via_proto"] = "syslog_udp"
-		g["_source_ip"] = srcIP
 		g["host"] = eventMap["hostname"]
 		g["level"] = eventMap["severity"]
 		g["_facility"] = global.GetFacility(eventMap["facility"].(int))
@@ -94,6 +98,12 @@ func parseSyslog(buf []byte, srcIP string, g parse.GELFMessage) error {
 		g["short_message"] = strings.TrimSuffix(fmt.Sprint(eventMap["message"]), "\n")
 		g["_structured_data"] = eventMap["structured_data"]
 		g["_original_format"] = "RFC5424"
+
+		if config.SyslogOverrideSourceIP != "" {
+			g["_source_ip"] = config.SyslogOverrideSourceIP
+		} else {
+			g["_source_ip"] = srcIP
+		}
 
 		if config.SyslogOverrideTime {
 			g["timestamp"] = time.Now().Unix()
@@ -120,11 +130,16 @@ func plainText(buf []byte, srcIP string, g parse.GELFMessage) error {
 	g["version"] = "1.1"
 	g["_via_hostname"] = config.Hostname
 	g["_via_proto"] = "syslog_udp"
-	g["_source_ip"] = srcIP
 	g["host"] = srcIP
 	g["short_message"] = strings.TrimSuffix(string(buf), "\n")
 	g["_original_format"] = "unknown"
 	g["timestamp"] = time.Now().Unix()
+
+	if config.SyslogOverrideSourceIP != "" {
+		g["_source_ip"] = config.SyslogOverrideSourceIP
+	} else {
+		g["_source_ip"] = srcIP
+	}
 
 	if config.SyslogFullMessage {
 		g["full_message"] = strings.TrimSuffix(string(buf), "\n")
