@@ -6,7 +6,30 @@ SQS is over HTTPS, providing a relatively secure log collection mechanism.
 For use on an AWS EC2 VM, providing access to SQS via an IAM role assigned to the EC2 instance is recommended.
 
 For logging from non-AWS environments, an AWS IAM key must be added to the configuration file. The policy assigned
-to the IAM user should only allow listing queues and write access to the single required SQS queue.
+to the IAM user should only allow listing queues (ListQueues) and sending messages (SendMessage) to the required SQS queue.
+
+The following policy example provides the minimum permissions required to locate and add messages to the SQS Queue.
+(Replace the region, account number, and queue name with appropriate values.)
+
+```
+{
+   "Version": "2012-10-17",
+   "Statement": [
+      {
+         "Sid": "VisualEditor0",
+         "Effect": "Allow",
+         "Action": "sqs:SendMessage",
+         "Resource": "arn:aws:sqs:ca-central-1:88888888:GELF"
+      },
+      {
+         "Sid": "VisualEditor1",
+         "Effect": "Allow",
+         "Action": "sqs:ListQueues",
+         "Resource": "*"
+      }
+   ]
+}
+```
 
 An open source application to read the SQS queue and send events to Graylog is available at
 https://github.com/tenebris-tech/sqs2gl.
