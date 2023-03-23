@@ -6,7 +6,8 @@ SQS is over HTTPS, providing a relatively secure log collection mechanism.
 For use on an AWS EC2 VM, providing access to SQS via an IAM role assigned to the EC2 instance is recommended.
 
 For logging from non-AWS environments, an AWS IAM key must be added to the configuration file. The policy assigned
-to the IAM user should only allow listing queues (ListQueues) and sending messages (SendMessage) to the required SQS queue.
+to the IAM user should only allow listing queues (ListQueues) and sending messages (SendMessage) to the required SQS
+queue.
 
 The following policy example provides the minimum permissions required to locate and add messages to the SQS Queue.
 (Replace the region, account number, and queue name with appropriate values.)
@@ -38,9 +39,10 @@ This application can:
 
 - Read one or more log files in real time (like tail) and forward them in GELF to an AWS SQS queue.
 
-- Receive RFC5424 and RFC3164 compliant syslog messages via UDP, parse them, and forward them to the 
-AWS SQS queue in GELF. If the type of syslog message can not be identified, or if parsing fails, the
-message is forwarded as-is. Parsing errors are reported via GELF to assist in debugging (this is a work in progress).
+- Receive RFC5424 and RFC3164 compliant syslog messages via UDP, parse them, and forward them to the
+  AWS SQS queue in GELF. If the type of syslog message can not be identified, the entire message is sent as text. 
+  If a received syslog message contains a valid GELF message, the GELF message is extracted and the syslog header
+  discarded. This allows sending GELF messages by leveraging standard syslog mechanisms.
 
 - Optionally add AWS EC2 instance metadata (instance ID, hostname, and tags) to each event.
 
@@ -79,7 +81,7 @@ This is a beta release.
 8) Run `systemctl enable log2sqs` to configure automatic start at boot
 9) Run `systemctl start log2sqs` to start the application
 10) Configure logrotated to locate the log file specified in log2sqs.conf. A sample rotate file is contained in
-   log2sqs.txt. It can be copied to /etc/logrotate.d/log2sqs. It should be owned by root and set to mode 0644.
+    log2sqs.txt. It can be copied to /etc/logrotate.d/log2sqs. It should be owned by root and set to mode 0644.
 
 ### Windows Installation
 

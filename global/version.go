@@ -5,4 +5,4 @@
 package global
 
 const ProductName = "log2sqs"
-const ProductVersion = "0.3.3"
+const ProductVersion = "0.4.0"

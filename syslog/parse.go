@@ -7,8 +7,6 @@ package syslog
 import (
 	"fmt"
 	"log"
-	"log2sqs/event"
-	"log2sqs/global"
 	"math"
 	"strings"
 	"time"
@@ -18,10 +16,25 @@ import (
 	"github.com/jeromer/syslogparser/rfc5424"
 
 	"log2sqs/config"
+	"log2sqs/event"
+	"log2sqs/global"
 	"log2sqs/parse"
 )
 
 func parseSyslog(buf []byte, srcIP string, g parse.GELFMessage) error {
+
+	// Is this a GELF message sent via syslog?
+	// If so, ignore the syslog data and use the GELF payload
+	err := gelf(buf, srcIP, g)
+	if err != nil {
+		// Log and continue
+		if config.Debug {
+			log.Printf("syslog.gelf returned: %s", err.Error())
+		}
+	} else {
+		// The message is valid GELF, so return the results
+		return nil
+	}
 
 	// Try to identify the syslog format
 	rfc, err := syslogparser.DetectRFC(buf)
@@ -31,6 +44,7 @@ func parseSyslog(buf []byte, srcIP string, g parse.GELFMessage) error {
 	}
 
 	switch rfc {
+
 	case syslogparser.RFC_UNKNOWN:
 		return plainText(buf, srcIP, g)
 
@@ -136,35 +150,5 @@ func parseSyslog(buf []byte, srcIP string, g parse.GELFMessage) error {
 			g["full_message"] = strings.TrimSuffix(string(buf), "\n")
 		}
 	}
-	return nil
-}
-
-// plainText handles log events that can not otherwise be parsed
-func plainText(buf []byte, srcIP string, g parse.GELFMessage) error {
-	g["version"] = "1.1"
-	g["_via_hostname"] = config.Hostname
-	g["_via_proto"] = "syslog_udp"
-	g["host"] = srcIP
-	g["short_message"] = strings.TrimSuffix(string(buf), "\n")
-	g["_original_format"] = "unknown"
-	g["timestamp"] = time.Now().Unix()
-
-	if config.SyslogOverrideSourceIP != "" {
-		g["_event_source_ip"] = config.SyslogOverrideSourceIP
-	} else {
-		if config.SyslogReplaceLocalhost && srcIP == "127.0.0.1" {
-			g["_event_source_ip"] = global.GetOutboundIP()
-			if g["_event_source_ip"] == "" {
-				g["_event_source_ip"] = srcIP
-			}
-		} else {
-			g["_event_source_ip"] = srcIP
-		}
-	}
-
-	if config.SyslogFullMessage {
-		g["full_message"] = strings.TrimSuffix(string(buf), "\n")
-	}
-
 	return nil
 }
