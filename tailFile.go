@@ -97,6 +97,7 @@ func tailFile(f config.InputFileDef) {
 			if send {
 				// Add filename
 				g["_log_file"] = f.Name
+				g["_log_source"] = config.Hostname
 
 				// Do we have addFields to add?
 				for key, value := range config.AddFields {

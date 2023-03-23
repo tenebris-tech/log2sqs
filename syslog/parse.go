@@ -100,9 +100,9 @@ func parseSyslog(buf []byte, srcIP string, g parse.GELFMessage) error {
 		g["_original_format"] = "RFC5424"
 
 		if config.SyslogOverrideSourceIP != "" {
-			g["_source_ip"] = config.SyslogOverrideSourceIP
+			g["_event_source_ip"] = config.SyslogOverrideSourceIP
 		} else {
-			g["_source_ip"] = srcIP
+			g["_event_source_ip"] = srcIP
 		}
 
 		if config.SyslogOverrideTime {
