@@ -85,7 +85,8 @@ This is a beta release.
 
 ### Windows Installation
 
-The application has been tested on Windows, but there is currently no demand for it to run as a Windows service.
+The application has been tested on Windows, but there is currently no demand for it to run as a Windows service. If
+you have a requirement, please open an issue to discuss.
 
 ### Copyright
 
