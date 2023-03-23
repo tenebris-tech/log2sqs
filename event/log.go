@@ -7,7 +7,6 @@ package event
 import (
 	"encoding/json"
 	"log"
-	"time"
 
 	"log2sqs/config"
 	"log2sqs/global"
@@ -28,7 +27,7 @@ func Log(message string, full string, level int) {
 	g["_app_name"] = global.ProductName + " " + global.ProductVersion
 	g["short_message"] = message
 	g["full_message"] = full
-	g["timestamp"] = time.Now().Unix()
+	g["timestamp"] = global.TimeStamp()
 	g["_via_hostname"] = config.Hostname
 	g["_via_proto"] = "gelf"
 

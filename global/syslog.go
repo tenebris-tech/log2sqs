@@ -4,6 +4,8 @@
 
 package global
 
+import "time"
+
 //goland:noinspection GoUnusedConst
 const (
 	EMERG = iota
@@ -102,4 +104,8 @@ func GetFacility(fac int) string {
 		return s
 	}
 	return "unknown"
+}
+
+func TimeStamp() float64 {
+	return float64(time.Now().UnixMilli()) / 1000.0
 }

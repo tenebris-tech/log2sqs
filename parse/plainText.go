@@ -5,9 +5,10 @@
 package parse
 
 import (
-	"log2sqs/config"
 	"strings"
-	"time"
+
+	"log2sqs/config"
+	"log2sqs/global"
 )
 
 // PlainText turns the string into a GELF message
@@ -17,7 +18,7 @@ func PlainText(s string, g GELFMessage) error {
 	g["version"] = "1.1"
 	g["host"] = config.Hostname
 	g["short_message"] = strings.TrimSuffix(s, "\n")
-	g["timestamp"] = time.Now().Unix()
+	g["timestamp"] = global.TimeStamp()
 	g["_original_format"] = "PlainText"
 	return nil
 }

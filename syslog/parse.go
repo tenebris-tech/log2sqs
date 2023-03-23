@@ -82,14 +82,14 @@ func parseSyslog(buf []byte, srcIP string, g parse.GELFMessage) error {
 		}
 
 		if config.SyslogOverrideTime {
-			g["timestamp"] = time.Now().Unix()
+			g["timestamp"] = global.TimeStamp()
 		} else {
 			g["timestamp"] = eventMap["timestamp"].(time.Time).Unix()
 
 			// Sanity check timestamp
 			// This safeguards against systems that log in local time instead of UTC with no time zone
 			// or have clocks that are out of whack
-			if math.Abs(float64(g["timestamp"].(int64))-float64(time.Now().Unix())) > 240 {
+			if math.Abs(float64(g["timestamp"].(int64))-global.TimeStamp()) > 240 {
 				g["timestamp"] = time.Now().Unix()
 			}
 		}
@@ -134,15 +134,15 @@ func parseSyslog(buf []byte, srcIP string, g parse.GELFMessage) error {
 		}
 
 		if config.SyslogOverrideTime {
-			g["timestamp"] = time.Now().Unix()
+			g["timestamp"] = global.TimeStamp()
 		} else {
 			g["timestamp"] = eventMap["timestamp"].(time.Time).Unix()
 
 			// Sanity check timestamp
 			// This safeguards against systems that log in local time instead of UTC with no time zone
 			// or have clocks that are out of whack
-			if math.Abs(float64(g["timestamp"].(int64))-float64(time.Now().Unix())) > 240 {
-				g["timestamp"] = time.Now().Unix()
+			if math.Abs(float64(g["timestamp"].(int64))-global.TimeStamp()) > 240 {
+				g["timestamp"] = global.TimeStamp()
 			}
 		}
 

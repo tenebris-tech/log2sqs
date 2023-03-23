@@ -9,13 +9,11 @@ import (
 	"errors"
 	"fmt"
 	"log"
-	"math"
-	"strconv"
-	"time"
-
 	"log2sqs/config"
 	"log2sqs/global"
 	"log2sqs/parse"
+	"math"
+	"strconv"
 )
 
 // plainText handles log events that can not otherwise be parsed
@@ -83,12 +81,12 @@ func gelf(buf []byte, srcIP string, g parse.GELFMessage) error {
 
 	// Sanity check timestamp
 	if gExists(j, "timestamp") {
-		if math.Abs(float64(gGetInt(j, "timestamp"))-float64(time.Now().Unix())) > 240 {
-			g["timestamp"] = time.Now().Unix()
+		if math.Abs(float64(gGetInt(j, "timestamp"))-global.TimeStamp()) > 240 {
+			g["timestamp"] = global.TimeStamp()
 		}
 	} else {
 		// Timestamp is missing, so just set it
-		g["timestamp"] = time.Now().Unix()
+		g["timestamp"] = global.TimeStamp()
 	}
 
 	// Add hostname and protocol

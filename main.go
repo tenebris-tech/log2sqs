@@ -7,15 +7,13 @@ package main
 import (
 	"fmt"
 	"log"
+	"log2sqs/config"
+	"log2sqs/event"
 	"log2sqs/global"
+	"log2sqs/syslog"
 	"os"
 	"os/signal"
 	"syscall"
-	"time"
-
-	"log2sqs/config"
-	"log2sqs/event"
-	"log2sqs/syslog"
 )
 
 func main() {
@@ -76,7 +74,6 @@ func main() {
 
 	// Send log event
 	event.Log(fmt.Sprintf("Starting %s %s", global.ProductName, global.ProductVersion), "", global.INFO)
-	time.Sleep(time.Second / 10)
 
 	// Iterate over list of files to monitor
 	// and launch a goroutine to handle each
