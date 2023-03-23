@@ -7,10 +7,10 @@ package event
 import (
 	"encoding/json"
 	"log"
-	"log2sqs/global"
 	"time"
 
 	"log2sqs/config"
+	"log2sqs/global"
 	"log2sqs/parse"
 )
 
@@ -30,7 +30,7 @@ func Log(message string, full string, level int) {
 	g["full_message"] = full
 	g["timestamp"] = time.Now().Unix()
 	g["_via_hostname"] = config.Hostname
-	g["_via_proto"] = "internal_gelf"
+	g["_via_proto"] = "gelf"
 
 	// Add source IP
 	if config.SyslogOverrideSourceIP != "" {

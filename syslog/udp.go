@@ -7,13 +7,13 @@ package syslog
 import (
 	"fmt"
 	"log"
-	"log2sqs/event"
-	"log2sqs/global"
 	"net"
 	"strings"
 	"time"
 
 	"log2sqs/config"
+	"log2sqs/event"
+	"log2sqs/global"
 )
 
 func UDP() {
