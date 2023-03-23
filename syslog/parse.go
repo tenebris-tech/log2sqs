@@ -55,9 +55,16 @@ func parseSyslog(buf []byte, srcIP string, g parse.GELFMessage) error {
 		g["_original_format"] = "RFC3164"
 
 		if config.SyslogOverrideSourceIP != "" {
-			g["_source_ip"] = config.SyslogOverrideSourceIP
+			g["_event_source_ip"] = config.SyslogOverrideSourceIP
 		} else {
-			g["_source_ip"] = srcIP
+			if config.SyslogReplaceLocalhost && srcIP == "127.0.0.1" {
+				g["_event_source_ip"] = global.GetOutboundIP()
+				if g["_event_source_ip"] == "" {
+					g["_event_source_ip"] = srcIP
+				}
+			} else {
+				g["_event_source_ip"] = srcIP
+			}
 		}
 
 		if config.SyslogOverrideTime {
@@ -143,9 +150,16 @@ func plainText(buf []byte, srcIP string, g parse.GELFMessage) error {
 	g["timestamp"] = time.Now().Unix()
 
 	if config.SyslogOverrideSourceIP != "" {
-		g["_source_ip"] = config.SyslogOverrideSourceIP
+		g["_event_source_ip"] = config.SyslogOverrideSourceIP
 	} else {
-		g["_source_ip"] = srcIP
+		if config.SyslogReplaceLocalhost && srcIP == "127.0.0.1" {
+			g["_event_source_ip"] = global.GetOutboundIP()
+			if g["_event_source_ip"] == "" {
+				g["_event_source_ip"] = srcIP
+			}
+		} else {
+			g["_event_source_ip"] = srcIP
+		}
 	}
 
 	if config.SyslogFullMessage {
