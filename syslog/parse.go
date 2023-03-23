@@ -102,7 +102,14 @@ func parseSyslog(buf []byte, srcIP string, g parse.GELFMessage) error {
 		if config.SyslogOverrideSourceIP != "" {
 			g["_event_source_ip"] = config.SyslogOverrideSourceIP
 		} else {
-			g["_event_source_ip"] = srcIP
+			if config.SyslogReplaceLocalhost && srcIP == "127.0.0.1" {
+				g["_event_source_ip"] = global.GetOutboundIP()
+				if g["_event_source_ip"] == "" {
+					g["_event_source_ip"] = srcIP
+				}
+			} else {
+				g["_event_source_ip"] = srcIP
+			}
 		}
 
 		if config.SyslogOverrideTime {

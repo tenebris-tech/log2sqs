@@ -32,6 +32,7 @@ var SyslogUDPMax = 2048
 var SyslogFullMessage = false
 var SyslogOverrideTime = false
 var SyslogOverrideSourceIP = ""
+var SyslogReplaceLocalhost = false
 var EventBuffer = 4096
 var InputFiles []InputFileDef
 var AddFields = map[string]string{}
@@ -129,6 +130,8 @@ func Load(filename string) error {
 			SyslogFullMessage = string2bool(value)
 		case "syslogoverridetime":
 			SyslogOverrideTime = string2bool(value)
+		case "syslogreplacelocalhost":
+			SyslogReplaceLocalhost = string2bool(value)
 		case "syslogoverridesourceip":
 			SyslogOverrideSourceIP = value
 		case "eventbuffer":
