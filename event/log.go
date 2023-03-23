@@ -29,6 +29,15 @@ func Log(message string, full string, level int) {
 	g["short_message"] = message
 	g["full_message"] = full
 	g["timestamp"] = time.Now().Unix()
+	g["_via_hostname"] = config.Hostname
+	g["_via_proto"] = "internal_gelf"
+
+	// Add source IP
+	if config.SyslogOverrideSourceIP != "" {
+		g["_event_source_ip"] = config.SyslogOverrideSourceIP
+	} else {
+		g["_event_source_ip"] = global.GetOutboundIP()
+	}
 
 	// Add any static fields
 	for key, value := range config.AddFields {
