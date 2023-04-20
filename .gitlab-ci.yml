@@ -1,0 +1,56 @@
+image: golang:latest
+
+variables:
+  PROGNAME: "log2sqs"
+  OUTDIR: build-$CI_COMMIT_BRANCH
+
+stages:
+  - test
+  - build
+  - deploy
+
+test-job:
+  stage: test
+  tags:
+    - build
+  script:
+    - echo "Running unit tests..."
+    - go fmt $(go list ./... | grep -v /vendor/)
+    - go vet $(go list ./... | grep -v /vendor/)
+#   - go test -race $(go list ./... | grep -v /vendor/)
+
+build-job:
+  stage: build
+  tags:
+    - build
+  script:
+    - echo "Compiling..."
+    - mkdir -p $OUTDIR
+    - env CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags="-s -w" -o $OUTDIR/$PROGNAME-linux-amd64
+    - env CGO_ENABLED=0 GOOS=linux GOARCH=386 go build -ldflags="-s -w" -o $OUTDIR/$PROGNAME-linux-386
+    - env CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -ldflags="-s -w" -o $OUTDIR/$PROGNAME-linux-arm64
+    - env CGO_ENABLED=0 GOOS=linux GOARCH=arm go build -ldflags="-s -w" -o $OUTDIR/$PROGNAME-linux-arm
+    - env CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build -ldflags="-s -w" -o $OUTDIR/$PROGNAME-windows-amd64.exe
+    - env CGO_ENABLED=0 GOOS=windows GOARCH=386 go build -ldflags="-s -w" -o $OUTDIR/$PROGNAME-windows-386.exe
+    - env CGO_ENABLED=0 GOOS=windows GOARCH=arm go build -ldflags="-s -w" -o $OUTDIR/$PROGNAME-windows-arm.exe
+    - echo "Compile complete."
+  artifacts:
+    paths:
+      - $OUTDIR
+
+
+deploy-job:
+  stage: deploy
+  tags:
+    - build
+  environment: production
+  script:
+    - echo "Deploying application..."
+    - mkdir -p /dist/$PROGNAME/$CI_COMMIT_BRANCH
+    - cp -f $OUTDIR/$PROGNAME-* /dist/$PROGNAME/$CI_COMMIT_BRANCH
+    - cd /dist
+    - chmod 755 $PROGNAME
+    - chmod 644 $PROGNAME/*
+    - chown -R gitlab-runner:gitlab-runner $PROGNAME
+    - echo "Application successfully deployed."
+
