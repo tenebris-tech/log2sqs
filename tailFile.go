@@ -23,13 +23,13 @@ func tailFile(f config.InputFileDef) {
 	var send bool
 	var g parse.GELFMessage
 
-	// Infinite loop to allow retry on error
+	// Infinite loop to facilitate restart on error
 	for {
 		// Set up to tail the file, starting at the current end
 		t, err := tail.TailFile(
 			f.Name,
 			tail.Config{Follow: true, ReOpen: true, Location: &tail.SeekInfo{Offset: 0, Whence: io.SeekEnd}})
-		//tail.Config{Follow: true, ReOpen: true})
+
 		if err != nil {
 			log.Printf("Error tailing file: %s [%d %s %s]", err.Error(), f.Index, f.Name, f.Type)
 			log.Printf("Sleeping for 60 seconds...")
@@ -38,6 +38,8 @@ func tailFile(f config.InputFileDef) {
 
 		// Loop and read
 		for line := range t.Lines {
+
+			// Create an empty message
 			g = parse.GELFMessage{}
 
 			// Trim leading and trailing whitespace
@@ -131,6 +133,7 @@ func tailFile(f config.InputFileDef) {
 			}
 		}
 
+		// For loop fell through. If there is an error, wait and restart the tail.
 		err = t.Wait()
 		if err != nil {
 			log.Printf("Wait error: %s [%d %s %s]", err.Error(), f.Index, f.Name, f.Type)

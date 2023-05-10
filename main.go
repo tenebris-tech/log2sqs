@@ -7,13 +7,14 @@ package main
 import (
 	"fmt"
 	"log"
+	"os"
+	"os/signal"
+	"syscall"
+
 	"log2sqs/config"
 	"log2sqs/event"
 	"log2sqs/global"
 	"log2sqs/syslog"
-	"os"
-	"os/signal"
-	"syscall"
 )
 
 func main() {
