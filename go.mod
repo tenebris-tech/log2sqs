@@ -3,7 +3,7 @@ module log2sqs
 go 1.19
 
 require (
-	github.com/aws/aws-sdk-go v1.44.260
+	github.com/aws/aws-sdk-go v1.44.280
 	github.com/jeromer/syslogparser v1.1.0
 	github.com/tenebris-tech/tail v1.0.5
 )
