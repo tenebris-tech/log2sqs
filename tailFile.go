@@ -82,6 +82,15 @@ func tailFile(f config.InputFileDef) {
 					send = true
 				}
 
+			case "combinedplusvhost":
+				// Apache combined log format with additional fields
+				err := parse.ApacheCombinedPlusVhost(s, g)
+				if err != nil {
+					log.Printf("Error parsing combinedplusvhost log format: %s", err.Error())
+				} else {
+					send = true
+				}
+
 			case "error":
 				// Apache error log format
 				err := parse.ApacheError(s, g)
