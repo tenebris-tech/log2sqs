@@ -69,6 +69,6 @@ func ApacheCombinedPlusVhost(s string, g GELFMessage) error {
 	g["_http_request_query"] = EmptyString(result[15])
 	g["_vhost"] = EmptyString(result[1])
 	g["_vhost_port"] = String2Int(result[2])
-	g["_original_format"] = "ApacheCombinedPlus"
+	g["_original_format"] = "ApacheCombinedPlusVhost"
 	return nil
 }
