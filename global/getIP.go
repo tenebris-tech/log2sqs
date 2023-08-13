@@ -20,5 +20,5 @@ func GetOutboundIP() string {
 		_ = conn.Close()
 	}(conn)
 
-	return fmt.Sprintln(conn.LocalAddr().(*net.UDPAddr).IP)
+	return fmt.Sprint(conn.LocalAddr().(*net.UDPAddr).IP)
 }
