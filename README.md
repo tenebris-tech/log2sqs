@@ -33,7 +33,7 @@ The following policy example provides the minimum permissions required to locate
 
 An open-source companion application to read the SQS queue and send events to Graylog is available at 
 
-https://github.com/tenebris-tech/sqs2gl.
+https://github.com/tenebris-tech/sqs2gl
 
 log2sqs can:
 
@@ -85,10 +85,12 @@ If you wish to add additional log file formats (or fix any parsing bugs you may 
 ### Command Line Arguments
 
 log2sqs now supports the following command line arguments:
-- config <configuration file path and name>
-- ingest <file>,<format>
 
-The ingest argument is designed for testing and for edge cases in which an existing log file must be ingested in it's entirety (unlike the default behavior of starting a tail at the end of an existing file).
+​	`-config <configuration file path and name>`
+
+​	`		-ingest <file>,<format>`
+
+The ingest argument is designed for testing and for edge cases in which an existing log file must be ingested in it's entirety (unlike the default behaviour of starting a tail at the end of an existing file).
 
 ### Development Status
 
