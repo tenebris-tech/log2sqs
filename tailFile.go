@@ -6,15 +6,16 @@ package main
 
 import (
 	"encoding/json"
-	"github.com/tenebris-tech/tail"
 	"io"
 	"log"
-	"log2sqs/global"
 	"strings"
 	"time"
 
+	"github.com/tenebris-tech/tail"
+
 	"log2sqs/config"
 	"log2sqs/event"
+	"log2sqs/global"
 	"log2sqs/parse"
 )
 
@@ -23,11 +24,16 @@ func tailFile(f config.InputFileDef) {
 
 	// Infinite loop to facilitate restart on error
 	for {
-		// Set up to tail the file, starting at the current end
-		t, err := tail.TailFile(
-			f.Name,
-			tail.Config{Follow: true, ReOpen: true, Location: &tail.SeekInfo{Offset: 0, Whence: io.SeekEnd}})
+		// Determine where we should start reading. By default, always start at the end to avoid
+		// reprocessing old data. But, if ReadAll is set, start at the beginning.
+		whence := io.SeekEnd
+		if f.ReadAll {
+			// Override for file ingestion
+			whence = io.SeekStart
+		}
 
+		// Tail the file
+		t, err := tail.TailFile(f.Name, tail.Config{Follow: true, ReOpen: true, Location: &tail.SeekInfo{Offset: 0, Whence: whence}})
 		if err != nil {
 			log.Printf("Error tailing file: %s [%d %s %s]", err.Error(), f.Index, f.Name, f.Type)
 			log.Printf("Sleeping for 60 seconds...")

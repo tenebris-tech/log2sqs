@@ -14,9 +14,10 @@ import (
 )
 
 type InputFileDef struct {
-	Index int
-	Name  string
-	Type  string
+	Index   int
+	Name    string
+	Type    string
+	ReadAll bool
 }
 
 var Debug = false
@@ -106,7 +107,7 @@ func Load(filename string) error {
 			AddEC2Tags = string2bool(value)
 		case "inputfile":
 			// Append to list (slice)
-			n, err := parseInputFile(value)
+			n, err := ParseInputFile(value)
 			if err != nil {
 				tmp := fmt.Sprintf("error parsing config file: %s, %s", line, err.Error())
 				return errors.New(tmp)
@@ -147,8 +148,8 @@ func Load(filename string) error {
 	return nil
 }
 
-// Parse input file into filename and type
-func parseInputFile(value string) (InputFileDef, error) {
+// ParseInputFile converts the string into a filename and type
+func ParseInputFile(value string) (InputFileDef, error) {
 	var f InputFileDef
 	s := strings.Split(value, ",")
 	if len(s) != 2 {
@@ -156,6 +157,7 @@ func parseInputFile(value string) (InputFileDef, error) {
 	}
 	f.Name = s[0]
 	f.Type = s[1]
+	f.ReadAll = false
 	return f, nil
 }
 

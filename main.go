@@ -5,9 +5,9 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"log"
-	"log2sqs/parse"
 	"os"
 	"os/signal"
 	"strings"
@@ -16,17 +16,35 @@ import (
 	"log2sqs/config"
 	"log2sqs/event"
 	"log2sqs/global"
+	"log2sqs/parse"
 	"log2sqs/syslog"
 )
 
 func main() {
 
-	// Default config file name
+	// Default configuration file
 	var configFile = "log2sqs.conf"
 
-	// Check for path to config file as argument
-	if len(os.Args) > 1 {
+	// File to ingest for testing
+	var ingest = ""
+
+	// Command line arguments
+
+	// Check for path to config file as only argument for backward compatibility
+	if len(os.Args) == 2 {
 		configFile = os.Args[1]
+	} else {
+		cF := flag.String("config", "log2sqs.conf", "configuration file")
+		iG := flag.String("ingest", "", "ingest entire file in the specified format")
+		flag.Parse()
+
+		if *cF != "" {
+			configFile = *cF
+		}
+
+		if *iG != "" {
+			ingest = *iG
+		}
 	}
 
 	// Setup signal catching
@@ -78,12 +96,24 @@ func main() {
 	// Send log event
 	event.Log(fmt.Sprintf("Starting %s %s", global.ProductName, global.ProductVersion), "", global.INFO)
 
+	// If command line ingest file specified, add it to the list
+	if ingest != "" {
+		ingestFile, err := config.ParseInputFile(ingest)
+		if err != nil {
+			event.Log(fmt.Sprintf("Unable to ingest specified file %s: %s", ingest, err.Error()), "", global.INFO)
+			os.Exit(1)
+		}
+		ingestFile.ReadAll = true
+		config.InputFiles = append(config.InputFiles, ingestFile)
+	}
+
 	// Iterate over list of files to monitor
 	for _, inputFile := range config.InputFiles {
 
 		// Force all file types to lower case
 		inputFile.Type = strings.ToLower(inputFile.Type)
 
+		// Check for valid file type
 		if parse.CheckFormat(inputFile.Type) == false {
 			event.Log(fmt.Sprintf("Unknown input file type: [%d]%s %s", inputFile.Index, inputFile.Name, inputFile.Type), "", global.INFO)
 		} else {

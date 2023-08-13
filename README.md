@@ -82,6 +82,14 @@ LogFormat "%{X-Forwarded-Proto}i %{Host}i:%{X-Forwarded-Port}i %v:%p %{X-Forward
 
 If you wish to add additional log file formats (or fix any parsing bugs you may find) all parsing definitions (including regex) can be found in parse/definitions.go. PRs are welcome.
 
+### Command Line Arguments
+
+log2sqs now supports the following command line arguments:
+- config <configuration file path and name>
+- ingest <file>,<format>
+
+The ingest argument is designed for testing and for edge cases in which an existing log file must be ingested in it's entirety (unlike the default behavior of starting a tail at the end of an existing file).
+
 ### Development Status
 
 This is a beta release and should be thoroughly tested prior to use in production environments.
