@@ -88,7 +88,7 @@ log2sqs now supports the following command line arguments:
 
 ​	`-config <configuration file path and name>`
 
-​	`		-ingest <file>,<format>`
+​	`-ingest <file>,<format>`
 
 The ingest argument is designed for testing and for edge cases in which an existing log file must be ingested in it's entirety (unlike the default behaviour of starting a tail at the end of an existing file).
 
