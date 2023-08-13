@@ -6,12 +6,12 @@ package main
 
 import (
 	"encoding/json"
+	"github.com/tenebris-tech/tail"
 	"io"
 	"log"
+	"log2sqs/global"
 	"strings"
 	"time"
-
-	"github.com/tenebris-tech/tail"
 
 	"log2sqs/config"
 	"log2sqs/event"
@@ -20,8 +20,6 @@ import (
 
 // Tail the file and write to the queue
 func tailFile(f config.InputFileDef) {
-	var send bool
-	var g parse.GELFMessage
 
 	// Infinite loop to facilitate restart on error
 	for {
@@ -39,73 +37,12 @@ func tailFile(f config.InputFileDef) {
 		// Loop and read
 		for line := range t.Lines {
 
-			// Create an empty message
-			g = parse.GELFMessage{}
-
-			// Trim leading and trailing whitespace
+			// Trim leading and trailing whitespace and parse the line
 			s := strings.TrimSpace(line.Text)
-
-			// Assume no data to send to queue
-			send = false
-
-			// Handle different file types here
-			switch strings.ToLower(f.Type) {
-			case "gelf":
-				// Unmarshal to verify JSON and allow adding fields
-				if json.Unmarshal([]byte(s), &g) == nil {
-					send = true
-				}
-
-			case "text":
-				err := parse.PlainText(s, g)
-				if err != nil {
-					log.Printf("Error parsing text log format: %s", err.Error())
-				} else {
-					send = true
-				}
-
-			case "combined":
-				// Apache/NGINX combined log format
-				err := parse.ApacheCombined(s, g)
-				if err != nil {
-					log.Printf("Error parsing combined log format: %s", err.Error())
-				} else {
-					send = true
-				}
-
-			case "combinedplus":
-				// Apache combined log format with additional fields
-				err := parse.ApacheCombinedPlus(s, g)
-				if err != nil {
-					log.Printf("Error parsing combinedplus log format: %s", err.Error())
-				} else {
-					send = true
-				}
-
-			case "combinedplusvhost":
-				// Apache combined log format with additional fields
-				err := parse.ApacheCombinedPlusVhost(s, g)
-				if err != nil {
-					log.Printf("Error parsing combinedplusvhost log format: %s", err.Error())
-				} else {
-					send = true
-				}
-
-			case "error":
-				// Apache error log format
-				err := parse.ApacheError(s, g)
-				if err != nil {
-					log.Printf("Error parsing Apache error log format: %s", err.Error())
-				} else {
-					send = true
-				}
-
-			default:
-				// Should never get there, but just in case...
-				log.Printf("Unknown log file type [%d %s %s]", f.Index, f.Name, f.Type)
-			}
-
-			if send {
+			g, err2 := parse.Parse(s, f.Type)
+			if err2 != nil {
+				log.Printf("error parsing %s: %s", s, err2.Error())
+			} else {
 				// Add filename
 				g["_log_file"] = f.Name
 				g["_log_source"] = config.Hostname
@@ -123,6 +60,11 @@ func tailFile(f config.InputFileDef) {
 					continue
 				}
 
+				// For debugging only
+				if config.Debug {
+					global.JSONPretty(gBytes)
+				}
+
 				// Loop until line is sent to allow retries in the event of a failure
 				// Since these are log files, there is no need to buffer them in memory
 				sent := false
@@ -136,9 +78,7 @@ func tailFile(f config.InputFileDef) {
 					} else {
 						sent = true
 					}
-				} // send to queue loop
-			} else {
-				log.Printf("Validation failed, ignoring: %s [%d %s %s]", s, f.Index, f.Name, f.Type)
+				}
 			}
 		}
 

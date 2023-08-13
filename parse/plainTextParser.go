@@ -11,14 +11,13 @@ import (
 	"log2sqs/global"
 )
 
-// PlainText turns the string into a GELF message
-func PlainText(s string, g GELFMessage) error {
-
-	// Create GELF message
+// plainTextParser turns the string into a GELF message
+func plainTextParser(s string, _ *Parser) (GELFMessage, error) {
+	g := GELFMessage{}
 	g["version"] = "1.1"
 	g["host"] = config.Hostname
 	g["short_message"] = strings.TrimSuffix(s, "\n")
 	g["timestamp"] = global.TimeStamp()
 	g["_original_format"] = "PlainText"
-	return nil
+	return g, nil
 }

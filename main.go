@@ -7,8 +7,10 @@ package main
 import (
 	"fmt"
 	"log"
+	"log2sqs/parse"
 	"os"
 	"os/signal"
+	"strings"
 	"syscall"
 
 	"log2sqs/config"
@@ -77,9 +79,17 @@ func main() {
 	event.Log(fmt.Sprintf("Starting %s %s", global.ProductName, global.ProductVersion), "", global.INFO)
 
 	// Iterate over list of files to monitor
-	// and launch a goroutine to handle each
 	for _, inputFile := range config.InputFiles {
-		go tailFile(inputFile)
+
+		// Force all file types to lower case
+		inputFile.Type = strings.ToLower(inputFile.Type)
+
+		if parse.CheckFormat(inputFile.Type) == false {
+			event.Log(fmt.Sprintf("Unknown input file type: [%d]%s %s", inputFile.Index, inputFile.Name, inputFile.Type), "", global.INFO)
+		} else {
+			// Launch a goroutine to handle this file
+			go tailFile(inputFile)
+		}
 	}
 
 	// Start Syslog UDP if configured
