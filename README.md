@@ -94,7 +94,7 @@ log2sqs now supports the following command line arguments:
 
 The ingest argument is designed for testing and for edge cases in which an existing log file must be ingested in its entirety (unlike the default behaviour of starting a tail at the end of an existing file).
 
-Dryrun will stop anything (the ingested file and anything specified in the config file) from being sent to SQS and will turn on a JSON pretty-print of the GELF message that would have otherwise been sent to SQS. This is intended for interactive testing only.
+Dryrun will stop anything (the ingested file and any other files specified in the config file) from being sent to SQS and will turn on a JSON pretty-print of the GELF message that would have otherwise been sent to SQS. Note that this feature does not currently change syslog processing. This is intended for interactive testing with log files only.
 
 ### Development Status
 
