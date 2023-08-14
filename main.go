@@ -20,6 +20,9 @@ import (
 	"log2sqs/syslog"
 )
 
+// Dry run flag
+var dryRun = false
+
 func main() {
 
 	// Default configuration file
@@ -29,13 +32,13 @@ func main() {
 	var ingest = ""
 
 	// Command line arguments
-
 	// Check for path to config file as only argument for backward compatibility
 	if len(os.Args) == 2 {
 		configFile = os.Args[1]
 	} else {
 		cF := flag.String("config", "log2sqs.conf", "configuration file")
 		iG := flag.String("ingest", "", "ingest entire file in the specified format")
+		dR := flag.Bool("dryrun", false, "dry run (do not send messages to SQS)")
 		flag.Parse()
 
 		if *cF != "" {
@@ -44,6 +47,10 @@ func main() {
 
 		if *iG != "" {
 			ingest = *iG
+		}
+
+		if *dR {
+			dryRun = true
 		}
 	}
 

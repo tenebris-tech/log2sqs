@@ -67,22 +67,24 @@ func tailFile(f config.InputFileDef) {
 				}
 
 				// For debugging only
-				if config.Debug {
+				if config.Debug || dryRun {
 					global.JSONPretty(gBytes)
 				}
 
-				// Loop until line is sent to allow retries in the event of a failure
-				// Since these are log files, there is no need to buffer them in memory
-				sent := false
-				for sent == false {
-					err := event.Send(gBytes)
-					if err != nil {
-						// Log error
-						log.Printf("Error sending to queue: %s [%d %s %s]", err.Error(), f.Index, f.Name, f.Type)
-						log.Printf("Sleeping for 30 seconds...")
-						time.Sleep(30 * time.Second)
-					} else {
-						sent = true
+				if !dryRun {
+					// Loop until line is sent to allow retries in the event of a failure
+					// Since these are log files, there is no need to buffer them in memory
+					sent := false
+					for sent == false {
+						err := event.Send(gBytes)
+						if err != nil {
+							// Log error
+							log.Printf("Error sending to queue: %s [%d %s %s]", err.Error(), f.Index, f.Name, f.Type)
+							log.Printf("Sleeping for 30 seconds...")
+							time.Sleep(30 * time.Second)
+						} else {
+							sent = true
+						}
 					}
 				}
 			}
