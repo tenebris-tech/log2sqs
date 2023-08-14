@@ -88,7 +88,7 @@ log2sqs now supports the following command line arguments:
 
 ​	`-config <configuration file path and name>`
 
-​	`		-ingest <file>,<format>`
+​	`-ingest <file>,<format>`
 
 ​	`-dryrun`
 
