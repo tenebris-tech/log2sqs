@@ -80,7 +80,7 @@ The combinedloadbalancer format includes most of the fields above, but also incl
 LogFormat "%{X-Forwarded-Proto}i %{Host}i:%{X-Forwarded-Port}i %v:%p %{X-Forwarded-For}i %h %t \"%r\" %>s %O \"%{Referer}i\" \"%{User-Agent}i\" %D \"%m\" \"%U\" \"%q\"" combinedloadbalancer
 ```
 
-If you wish to add additional log file formats (or fix any parsing bugs you may find) all parsing definitions (including regex) can be found in parse/definitions.go. PRs are welcome.
+**User-defined regex-based parsing formats can be added to the configuration file.**
 
 ### Command Line Arguments
 
