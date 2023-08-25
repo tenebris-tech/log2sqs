@@ -4,7 +4,10 @@
 
 package parse
 
-import "regexp"
+import (
+	"log2sqs/config"
+	"regexp"
+)
 
 // GELFMessage type can hold GELF fields of various types
 type GELFMessage map[string]interface{}
@@ -13,22 +16,9 @@ type GELFMessage map[string]interface{}
 type Parser struct {
 	format        string                                     // name of the format
 	parserFunc    func(string, *Parser) (GELFMessage, error) // pointer to the parser function
-	regexFields   RegexFields                                // map of regexes for each Field to put them in the correct order
+	regexFields   config.RegexFields                         // map of regexes for each Field to put them in the correct order
 	requireFields int                                        // number of fields required to be present
 	regex         *regexp.Regexp                             // pointer to the compiled regex
-}
-
-// RegexFields is a collection of RegexFields
-type RegexFields map[int]RegexField
-
-// RegexField describes how to parse each Field and what to map it to
-type RegexField struct {
-	Regex        string // Regex to match the Field
-	Field        string // name of the Field
-	FType        string // type of the Field
-	ShortMessage bool   // if true, the Field will be used as the short_message in addition to the named Field
-	DateFormat   string // if the Field is a date, this is the format to use for parsing
-	AddTZ        bool   // if true, add the +0000 timezone to the timestamp to deal with annoying Apache logs
 }
 
 // Parse formats
@@ -52,7 +42,7 @@ var Parsers = map[string]Parser{
 	formatApacheCombinedLoadBalancer: {format: formatApacheCombinedLoadBalancer, parserFunc: regexParser, regexFields: apacheCombinedLoadBalancerRegex, requireFields: 17},
 }
 
-var apacheErrorRegex = map[int]RegexField{
+var apacheErrorRegex = config.RegexFields{
 	1: {Regex: `^\[([^]]+)\]\s`, Field: "timestamp", FType: "date", DateFormat: "Mon Jan 02 15:04:05.000000 2006 -0700", AddTZ: true},
 	2: {Regex: `(\S+):`, Field: "_apache_module", FType: "string"},
 	3: {Regex: `(\S+)\s`, Field: "_apache_level", FType: "string"},
@@ -61,7 +51,7 @@ var apacheErrorRegex = map[int]RegexField{
 }
 
 // LogFormat "%h %l %u %t \"%r\" %>s %O \"%{Referer}i\" \"%{User-Agent}i\"" combined
-var apacheCombinedRegex = map[int]RegexField{
+var apacheCombinedRegex = config.RegexFields{
 	1: {Regex: `^(\S+)\s`, Field: "_src_ip", FType: "string"},
 	2: {Regex: `(\S+)\s`, Field: "_http_ident", FType: "string"},
 	3: {Regex: `(\S+)\s`, Field: "_user", FType: "string"},
@@ -74,7 +64,7 @@ var apacheCombinedRegex = map[int]RegexField{
 }
 
 // LogFormat "%h %l %u %t \"%r\" %>s %O \"%{Referer}i\" \"%{User-Agent}i\" %D \"%m\" \"%U\" \"%q\"" combinedplus
-var apacheCombinedPlusRegex = map[int]RegexField{
+var apacheCombinedPlusRegex = config.RegexFields{
 	1:  {Regex: `^(\S+)\s`, Field: "_src_ip", FType: "string"},
 	2:  {Regex: `(\S+)\s`, Field: "_http_ident", FType: "string"},
 	3:  {Regex: `(\S+)\s`, Field: "_user", FType: "string"},
@@ -91,7 +81,7 @@ var apacheCombinedPlusRegex = map[int]RegexField{
 }
 
 // LogFormat "%v:%p %h %l %u %t \"%r\" %>s %O \"%{Referer}i\" \"%{User-Agent}i\" %D \"%m\" \"%U\" \"%q\"" combinedplusvhost
-var apacheCombinedPlusVhostRegex = map[int]RegexField{
+var apacheCombinedPlusVhostRegex = config.RegexFields{
 	1:  {Regex: `$(\S+):`, Field: "_vhost", FType: "string"},
 	2:  {Regex: `(\S+)\s`, Field: "_vhost_port", FType: "int"},
 	3:  {Regex: `(\S+)\s`, Field: "_src_ip", FType: "string"},
@@ -110,7 +100,7 @@ var apacheCombinedPlusVhostRegex = map[int]RegexField{
 }
 
 // LogFormat "%{X-Forwarded-Proto}i %{Host}i:%{X-Forwarded-Port}i %v:%p %{X-Forwarded-For}i %h %t \"%r\" %>s %O \"%{Referer}i\" \"%{User-Agent}i\" %D \"%m\" \"%U\" \"%q\"" combinedloadbalancer
-var apacheCombinedLoadBalancerRegex = map[int]RegexField{
+var apacheCombinedLoadBalancerRegex = config.RegexFields{
 	1:  {Regex: `^(\S+)\s`, Field: "_x-forwarded-proto", FType: "string"},
 	2:  {Regex: `(\S+):`, Field: "_http_host", FType: "string"},
 	3:  {Regex: `(\S+)\s`, Field: "_x-forwarded-port", FType: "string"},

@@ -6,6 +6,7 @@ require (
 	github.com/aws/aws-sdk-go v1.44.330
 	github.com/jeromer/syslogparser v1.1.0
 	github.com/tenebris-tech/tail v1.0.5
+	gopkg.in/yaml.v2 v2.2.8
 )
 
 require (

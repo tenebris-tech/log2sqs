@@ -4,12 +4,15 @@
 
 package parse
 
-import "errors"
+import (
+	"errors"
+	"log2sqs/config"
+)
 
 // AddRegexParser adds a new regex parser to the list of available parsers
 //
 //goland:noinspection GoUnusedExportedFunction
-func AddRegexParser(name string, fields RegexFields) error {
+func AddRegexParser(name string, fields config.RegexFields) error {
 	if name == "" {
 		return errors.New("parser name cannot be empty")
 	}
