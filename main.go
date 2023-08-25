@@ -26,7 +26,7 @@ var dryRun = false
 func main() {
 
 	// Default configuration file
-	var configFile = "log2sqs.conf"
+	var configFile = "log2sqs.yaml"
 
 	// File to ingest for testing
 	var ingest = ""
@@ -36,7 +36,7 @@ func main() {
 	if len(os.Args) == 2 {
 		configFile = os.Args[1]
 	} else {
-		cF := flag.String("config", "log2sqs.conf", "configuration file")
+		cF := flag.String("config", "log2sqs.yaml", "configuration file")
 		iG := flag.String("ingest", "", "ingest entire file in the specified format")
 		dR := flag.Bool("dryrun", false, "dry run (do not send messages to SQS)")
 		flag.Parse()
@@ -69,7 +69,7 @@ func main() {
 	}()
 
 	// Load configuration information
-	err := config.LoadLegacy(configFile)
+	err := config.Load(configFile)
 	if err != nil {
 		log.Fatal(err.Error())
 	}
@@ -91,6 +91,9 @@ func main() {
 			log.SetOutput(f)
 		}
 	}
+
+	// Add custom parsers from config.Config
+	parse.AddCustomParsers()
 
 	// Retrieve EC2 addFields if necessary
 	if config.Config.AddEC2Tags {

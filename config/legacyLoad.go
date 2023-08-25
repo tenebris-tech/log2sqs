@@ -19,9 +19,6 @@ func LoadLegacy(filename string) error {
 	var value string
 	var err error
 
-	// Set defaults
-	SetDefaults()
-
 	// Open the file
 	file, err := os.Open(filename)
 	if err != nil {

@@ -24,18 +24,19 @@ type Data struct {
 	EventBuffer            int               `yaml:"EventBuffer"`
 	InputFiles             []InputFileDef    `yaml:"InputFiles"`
 	AddFields              map[string]string `yaml:"AddFields"`
+	CustomParsers          []CustomParser    `yaml:"CustomParsers,omitempty"`
 }
 
 type InputFileDef struct {
 	Name    string `yaml:"Name"`
 	Type    string `yaml:"Type"`
-	ReadAll bool   `yaml:"ReadAll"`
+	ReadAll bool   `yaml:"-"`
 }
 
 type CustomParser struct {
-	Name           string      `yaml:"Name"`
-	RequiredFields int         `yaml:"RequiredFields"`
-	RegexFields    RegexFields `yaml:"RegexFields"`
+	Name        string      `yaml:"Name"`
+	Type        string      `yaml:"Type"`
+	RegexFields RegexFields `yaml:"RegexFields,omitempty"`
 }
 
 // RegexFields is a collection of RegexFields
@@ -43,12 +44,12 @@ type RegexFields map[int]RegexField
 
 // RegexField describes how to parse each Field and what to map it to
 type RegexField struct {
-	Regex        string // Regex to match the Field
-	Field        string // name of the Field
-	FType        string // type of the Field
-	ShortMessage bool   // if true, the Field will be used as the short_message in addition to the named Field
-	DateFormat   string // if the Field is a date, this is the format to use for parsing
-	AddTZ        bool   // if true, add the +0000 timezone to the timestamp to deal with annoying Apache logs
+	Regex        string `yaml:"Regex"`                  // Regex to match the Field
+	Field        string `yaml:"Field"`                  // name of the Field
+	FType        string `yaml:"FieldType"`              // type of the Field
+	ShortMessage bool   `yaml:"ShortMessage,omitempty"` // if true, the Field will be used as the short_message in addition to the named Field
+	DateFormat   string `yaml:"DateFormat,omitempty"`   // if the Field is a date, this is the format to use for parsing
+	AddTZ        bool   `yaml:"AddTZ,omitempty"`        // if true, add the +0000 timezone to the timestamp to deal with annoying Apache logs
 }
 
 var Config Data
