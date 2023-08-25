@@ -3,9 +3,10 @@ module log2sqs
 go 1.20
 
 require (
-	github.com/aws/aws-sdk-go v1.44.322
+	github.com/aws/aws-sdk-go v1.44.331
 	github.com/jeromer/syslogparser v1.1.0
 	github.com/tenebris-tech/tail v1.0.5
+	gopkg.in/yaml.v2 v2.4.0
 )
 
 require (

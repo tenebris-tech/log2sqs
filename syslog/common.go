@@ -26,7 +26,7 @@ func syslogProcess(buf []byte, srcIP string) error {
 	}
 
 	// Add any static fields
-	for key, value := range config.AddFields {
+	for key, value := range config.Config.AddFields {
 		g[key] = value
 	}
 
@@ -36,7 +36,7 @@ func syslogProcess(buf []byte, srcIP string) error {
 		return errors.New(fmt.Sprintf("error marshaling to JSON: %s", err.Error()))
 	}
 
-	if config.Debug {
+	if config.Config.Debug {
 		log.Printf("Syslog: %s", string(gBytes[:]))
 	}
 

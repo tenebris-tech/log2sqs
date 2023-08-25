@@ -28,7 +28,7 @@ func parseSyslog(buf []byte, srcIP string, g parse.GELFMessage) error {
 	err := gelf(buf, srcIP, g)
 	if err != nil {
 		// Log and continue
-		if config.Debug {
+		if config.Config.Debug {
 			log.Printf("syslog.gelf returned: %s", err.Error())
 		}
 	} else {
@@ -59,7 +59,7 @@ func parseSyslog(buf []byte, srcIP string, g parse.GELFMessage) error {
 		// Dump() returns a map[string]interface{}
 		eventMap := p.Dump()
 		g["version"] = "1.1"
-		g["_via_hostname"] = config.Hostname
+		g["_via_hostname"] = config.Config.Hostname
 		g["_via_proto"] = "syslog_udp"
 		g["host"] = eventMap["hostname"]
 		g["level"] = eventMap["severity"]
@@ -68,10 +68,10 @@ func parseSyslog(buf []byte, srcIP string, g parse.GELFMessage) error {
 		g["short_message"] = strings.TrimSuffix(fmt.Sprint(eventMap["content"]), "\n")
 		g["_original_format"] = "RFC3164"
 
-		if config.SyslogOverrideSourceIP != "" {
-			g["_event_source_ip"] = config.SyslogOverrideSourceIP
+		if config.Config.SyslogOverrideSourceIP != "" {
+			g["_event_source_ip"] = config.Config.SyslogOverrideSourceIP
 		} else {
-			if config.SyslogReplaceLocalhost && srcIP == "127.0.0.1" {
+			if config.Config.SyslogReplaceLocalhost && srcIP == "127.0.0.1" {
 				g["_event_source_ip"] = global.GetOutboundIP()
 				if g["_event_source_ip"] == "" {
 					g["_event_source_ip"] = srcIP
@@ -81,7 +81,7 @@ func parseSyslog(buf []byte, srcIP string, g parse.GELFMessage) error {
 			}
 		}
 
-		if config.SyslogOverrideTime {
+		if config.Config.SyslogOverrideTime {
 			g["timestamp"] = global.TimeStamp()
 		} else {
 			g["timestamp"] = eventMap["timestamp"].(time.Time).Unix()
@@ -94,7 +94,7 @@ func parseSyslog(buf []byte, srcIP string, g parse.GELFMessage) error {
 			}
 		}
 
-		if config.SyslogFullMessage {
+		if config.Config.SyslogFullMessage {
 			g["full_message"] = strings.TrimSuffix(string(buf), "\n")
 		}
 
@@ -109,7 +109,7 @@ func parseSyslog(buf []byte, srcIP string, g parse.GELFMessage) error {
 		// Dump() returns a map[string]interface{}
 		eventMap := p.Dump()
 		g["version"] = "1.1"
-		g["_via_hostname"] = config.Hostname
+		g["_via_hostname"] = config.Config.Hostname
 		g["_via_proto"] = "syslog_udp"
 		g["host"] = eventMap["hostname"]
 		g["level"] = eventMap["severity"]
@@ -120,10 +120,10 @@ func parseSyslog(buf []byte, srcIP string, g parse.GELFMessage) error {
 		g["_structured_data"] = eventMap["structured_data"]
 		g["_original_format"] = "RFC5424"
 
-		if config.SyslogOverrideSourceIP != "" {
-			g["_event_source_ip"] = config.SyslogOverrideSourceIP
+		if config.Config.SyslogOverrideSourceIP != "" {
+			g["_event_source_ip"] = config.Config.SyslogOverrideSourceIP
 		} else {
-			if config.SyslogReplaceLocalhost && srcIP == "127.0.0.1" {
+			if config.Config.SyslogReplaceLocalhost && srcIP == "127.0.0.1" {
 				g["_event_source_ip"] = global.GetOutboundIP()
 				if g["_event_source_ip"] == "" {
 					g["_event_source_ip"] = srcIP
@@ -133,7 +133,7 @@ func parseSyslog(buf []byte, srcIP string, g parse.GELFMessage) error {
 			}
 		}
 
-		if config.SyslogOverrideTime {
+		if config.Config.SyslogOverrideTime {
 			g["timestamp"] = global.TimeStamp()
 		} else {
 			g["timestamp"] = eventMap["timestamp"].(time.Time).Unix()
@@ -146,7 +146,7 @@ func parseSyslog(buf []byte, srcIP string, g parse.GELFMessage) error {
 			}
 		}
 
-		if config.SyslogFullMessage {
+		if config.Config.SyslogFullMessage {
 			g["full_message"] = strings.TrimSuffix(string(buf), "\n")
 		}
 	}

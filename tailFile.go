@@ -35,7 +35,7 @@ func tailFile(f config.InputFileDef) {
 		// Tail the file
 		t, err := tail.TailFile(f.Name, tail.Config{Follow: true, ReOpen: true, Location: &tail.SeekInfo{Offset: 0, Whence: whence}})
 		if err != nil {
-			log.Printf("Error tailing file: %s [%d %s %s]", err.Error(), f.Index, f.Name, f.Type)
+			log.Printf("Error tailing file: %s [%s %s]", err.Error(), f.Name, f.Type)
 			log.Printf("Sleeping for 60 seconds...")
 			time.Sleep(60 * time.Second)
 		}
@@ -51,23 +51,23 @@ func tailFile(f config.InputFileDef) {
 			} else {
 				// Add filename
 				g["_log_file"] = f.Name
-				g["_log_source"] = config.Hostname
+				g["_log_source"] = config.Config.Hostname
 
 				// Do we have addFields to add?
-				for key, value := range config.AddFields {
+				for key, value := range config.Config.AddFields {
 					g[key] = value
 				}
 
 				// Marshal JSON for queue
 				gBytes, err := json.Marshal(g)
 				if err != nil {
-					log.Printf("Failed to marshal JSON %s [%d %s %s]", err.Error(), f.Index, f.Name, f.Type)
+					log.Printf("Failed to marshal JSON %s [%s %s]", err.Error(), f.Name, f.Type)
 					// Drop this log event
 					continue
 				}
 
 				// For debugging only
-				if config.Debug || dryRun {
+				if config.Config.Debug || dryRun {
 					global.JSONPretty(gBytes)
 				}
 
@@ -79,7 +79,7 @@ func tailFile(f config.InputFileDef) {
 						err := event.Send(gBytes)
 						if err != nil {
 							// Log error
-							log.Printf("Error sending to queue: %s [%d %s %s]", err.Error(), f.Index, f.Name, f.Type)
+							log.Printf("Error sending to queue: %s [%s %s]", err.Error(), f.Name, f.Type)
 							log.Printf("Sleeping for 30 seconds...")
 							time.Sleep(30 * time.Second)
 						} else {
@@ -93,7 +93,7 @@ func tailFile(f config.InputFileDef) {
 		// For loop fell through. If there is an error, wait and restart the tail.
 		err = t.Wait()
 		if err != nil {
-			log.Printf("Wait error: %s [%d %s %s]", err.Error(), f.Index, f.Name, f.Type)
+			log.Printf("Wait error: %s [%s %s]", err.Error(), f.Name, f.Type)
 			log.Printf("Sleeping for 60 seconds...")
 			time.Sleep(60 * time.Second)
 		}

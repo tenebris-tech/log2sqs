@@ -35,7 +35,7 @@ func openSQS() {
 			log.Printf("Sleeping for 30 seconds...")
 			time.Sleep(30 * time.Second)
 		} else {
-			log.Printf("SQS queue %s opened", config.AWSQueueName)
+			log.Printf("SQS queue %s opened", config.Config.AWSQueueName)
 			return
 		}
 	}
@@ -46,16 +46,16 @@ func connectSQS() error {
 	var awsConfig *aws.Config
 
 	// Initialize a session
-	if config.AWSID == "role" {
+	if config.Config.AWSID == "role" {
 		// Assume EC2 instance with permissions granted through IAM
 		awsConfig = &aws.Config{
-			Region: aws.String(config.AWSRegion),
+			Region: aws.String(config.Config.AWSRegion),
 		}
 	} else {
 		// Use credentials from configuration
-		awsCredentials = credentials.NewStaticCredentials(config.AWSID, config.AWSKey, "")
+		awsCredentials = credentials.NewStaticCredentials(config.Config.AWSID, config.Config.AWSKey, "")
 		awsConfig = &aws.Config{
-			Region:      aws.String(config.AWSRegion),
+			Region:      aws.String(config.Config.AWSRegion),
 			Credentials: awsCredentials,
 		}
 	}
@@ -76,14 +76,14 @@ func connectSQS() error {
 
 	// Search for requested queue name
 	for _, t := range listQueueResults.QueueUrls {
-		if strings.Contains(*t, config.AWSQueueName) {
+		if strings.Contains(*t, config.Config.AWSQueueName) {
 			qURL = *t
 			break
 		}
 	}
 
 	if qURL == "" {
-		tmp := fmt.Sprintf("unable to find SQS queue %s", config.AWSQueueName)
+		tmp := fmt.Sprintf("unable to find SQS queue %s", config.Config.AWSQueueName)
 		return errors.New(tmp)
 	}
 

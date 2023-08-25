@@ -12,7 +12,8 @@ User=root
 Group=root
 Restart=always
 RestartSec=1
-ExecStart=/opt/log2sqs/log2sqs -config /opt/log2sqs/log2sqs.conf
+#ExecStart=/opt/log2sqs/log2sqs -config /opt/log2sqs/log2sqs.conf
+ExecStart=/opt/log2sqs/log2sqs -config /opt/log2sqs/log2sqs.yaml
 
 [Install]
 WantedBy=multi-user.target

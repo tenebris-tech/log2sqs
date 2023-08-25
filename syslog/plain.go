@@ -17,17 +17,17 @@ import (
 func plainText(buf []byte, srcIP string, g parse.GELFMessage) error {
 
 	g["version"] = "1.1"
-	g["_via_hostname"] = config.Hostname
+	g["_via_hostname"] = config.Config.Hostname
 	g["_via_proto"] = "syslog_udp"
 	g["host"] = srcIP
 	g["short_message"] = strings.TrimSuffix(string(buf), "\n")
 	g["_original_format"] = "unknown"
 	g["timestamp"] = time.Now().Unix()
 
-	if config.SyslogOverrideSourceIP != "" {
-		g["_event_source_ip"] = config.SyslogOverrideSourceIP
+	if config.Config.SyslogOverrideSourceIP != "" {
+		g["_event_source_ip"] = config.Config.SyslogOverrideSourceIP
 	} else {
-		if config.SyslogReplaceLocalhost && srcIP == "127.0.0.1" {
+		if config.Config.SyslogReplaceLocalhost && srcIP == "127.0.0.1" {
 			g["_event_source_ip"] = global.GetOutboundIP()
 			if g["_event_source_ip"] == "" {
 				g["_event_source_ip"] = srcIP
@@ -37,7 +37,7 @@ func plainText(buf []byte, srcIP string, g parse.GELFMessage) error {
 		}
 	}
 
-	if config.SyslogFullMessage {
+	if config.Config.SyslogFullMessage {
 		g["full_message"] = strings.TrimSuffix(string(buf), "\n")
 	}
 
