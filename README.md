@@ -1,5 +1,7 @@
 # log2sqs
 
+**WARNING: The configuration file is transitioning to YAML. Please see the example configuration file and the notes below.**
+
 This application facilitates distributed log collection and parsing into Graylog GELF via an AWS SQS queue. Communication with SQS is over HTTPS, providing a relatively secure log collection mechanism.
 
 If you are installing log2sqs on an AWS EC2 VM, providing access to SQS via an IAM role assigned to the EC2 instance is recommended.
@@ -80,7 +82,9 @@ The combinedloadbalancer format includes most of the fields above, but also incl
 LogFormat "%{X-Forwarded-Proto}i %{Host}i:%{X-Forwarded-Port}i %v:%p %{X-Forwarded-For}i %h %t \"%r\" %>s %O \"%{Referer}i\" \"%{User-Agent}i\" %D \"%m\" \"%U\" \"%q\"" combinedloadbalancer
 ```
 
-**User-defined regex-based parsing formats can be added to the configuration file.**
+**As of version 0.7.0, the preferred configuration file format is YAML and the default configuration filename is log2sqs.yaml. If a filename ending in .conf is specified, it will be parsed using the legacy format for backward compatibility. However, this will be deprecated in a future version.**
+
+**User-defined regex-based parsing formats can be added to the YAML-format configuration file.**
 
 ### Command Line Arguments
 
@@ -103,17 +107,17 @@ This is a beta release and should be thoroughly tested prior to use in productio
 ### Linux Installation
 
 1) Clone the repo and compile using "go build"
-2) Copy the binary (log2sqs) and config file (log2sqs.conf) to /opt/log2sqs. If you put it elsewhere you will need to
+2) Copy the binary (log2sqs) and config file (log2sqs.yaml) to /opt/log2sqs. If you put it elsewhere, you will need to
    update the .service file.
 3) Ensure that log2sqs has the execute bit set (i.e. chmod 700 or 755)
-4) Set restrictive permissions on log2sqs.conf, especially if it contains an AWS key (i.e. chmod 600)
+4) Set restrictive permissions on log2sqs.yaml, especially if it contains an AWS key (i.e. chmod 600)
 5) Copy log2sqs.service to /etc/systemd/system/
 6) Update the User and Group in log2sqs.service if you do not wish to run as root
 7) Update the configuration file (log2sqs.conf)
 8) Run `systemctl daemon-reload`
 9) Run `systemctl enable log2sqs` to configure automatic start at boot
 10) Run `systemctl start log2sqs` to start the application
-11) Configure logrotated to locate the log file specified in log2sqs.conf. A sample rotate file is contained in
+11) Configure logrotated to locate the log file specified in log2sqs.yaml. A sample rotate file is contained in
     log2sqs.txt. It can be copied to /etc/logrotate.d/log2sqs. It should be owned by root and set to mode 0644.
 
 ### Windows Installation
