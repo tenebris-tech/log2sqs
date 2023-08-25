@@ -4,9 +4,9 @@
 #
 
 # Enable debug information
-#Debug: true
+Debug: false
 
-# Logging file. Empty string means write to stderr.
+# Logging file. Empty string (or not specified) means write to stderr.
 #LogFile: /var/log/log2sqs.log
 
 # Events not originating in files will be buffered in memory to prevent data
@@ -34,27 +34,27 @@ AddEC2Tags: false
 # Syslog UDP configuration
 #
 # Uncomment to enable receiving and forwarding Syslog UDP log events
-#SyslogUDP = 0.0.0.0:5140
+#SyslogUDP: 127.0.0.1:5140
 #
 # Maximum UDP receive message size, default is 2048
-#SyslogUDPMax = 2048
+#SyslogUDPMax: 2048
 #
 # Uncomment to include full unparsed syslog message in the full_message field
-#SyslogFullMessage = true
+#SyslogFullMessage: true
 #
 # Uncomment to ignore the timestamp in the syslog message and replace it with the
 # time the message was received. This is particularly useful with RFC3164 messages
 # that don't contain a timezone and use local time instead of UTC.
-#SyslogOverrideTime = true
+#SyslogOverrideTime: true
 #
 # Uncomment to override the event_source_ip field. This is useful when collecting logs
 # on a single system via the loopback interface or if you want to hide the actual IP.
-#SyslogOverrideSourceIP = 0.0.0.0
+#SyslogOverrideSourceIP: 0.0.0.0
 #
 # Alternatively, it may be desirable to automatically replace 127.0.0.1 with the host's
 # preferred outbound IP address when logging locally via the loopback interface.
 # This will be ignored if SyslogOverrideSourceIP is set.
-#SyslogReplaceLocalhost = true
+#SyslogReplaceLocalhost: true
 
 # Log file(s) to read. The filename and file type (parser format) must be specified
 InputFiles:
