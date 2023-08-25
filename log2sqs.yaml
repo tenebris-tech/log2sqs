@@ -1,0 +1,154 @@
+#
+# log2sqs configuration
+# This is the new YAML file format for log2sqs
+#
+
+# Enable debug information
+#Debug: true
+
+# Logging file. Empty string means write to stderr.
+#LogFile: /var/log/log2sqs.log
+
+# Events not originating in files will be buffered in memory to prevent data
+# loss during transient network or SQS failures. By default, 4096 events are
+# buffered. Increasing this excessively may result in an out of memory
+# condition.
+EventBuffer: 4096
+
+# Override hostname
+#Hostname: MyHostName
+
+# SQS Configuration
+#
+# Set AWSID to role and omit AWSKey to use an IAM role assigned to EC2 instance (recommended).
+# Otherwise, specify an IAM ID and Key
+#
+AWSID: role
+#AWSKey:
+AWSRegion: us-east-1
+AWSQueueName: graylog
+
+# Should EC2 tags be added to the log event?
+AddEC2Tags: false
+
+# Syslog UDP configuration
+#
+# Uncomment to enable receiving and forwarding Syslog UDP log events
+#SyslogUDP = 0.0.0.0:5140
+#
+# Maximum UDP receive message size, default is 2048
+#SyslogUDPMax = 2048
+#
+# Uncomment to include full unparsed syslog message in the full_message field
+#SyslogFullMessage = true
+#
+# Uncomment to ignore the timestamp in the syslog message and replace it with the
+# time the message was received. This is particularly useful with RFC3164 messages
+# that don't contain a timezone and use local time instead of UTC.
+#SyslogOverrideTime = true
+#
+# Uncomment to override the event_source_ip field. This is useful when collecting logs
+# on a single system via the loopback interface or if you want to hide the actual IP.
+#SyslogOverrideSourceIP = 0.0.0.0
+#
+# Alternatively, it may be desirable to automatically replace 127.0.0.1 with the host's
+# preferred outbound IP address when logging locally via the loopback interface.
+# This will be ignored if SyslogOverrideSourceIP is set.
+#SyslogReplaceLocalhost = true
+
+# Log file(s) to read. The filename and file type (parser format) must be specified
+InputFiles:
+- Name: /tmp/gelf-log.txt
+  Type: gelf
+- Name: /tmp/access.log
+  Type: combinedloadbalancer
+- Name: /tmp/error.log
+  Type: error
+- Name: /tmp/custom.log
+  Type: custom1
+
+# Optional fields to add to every log event
+AddFields:
+  _site: MySiteName
+  _environment: MyEnvironment
+
+# NEW: One or more custom parser can be defined here.
+# The parser name must be unique and can be used as an InputFiles Type above.
+# At this time, only regex parsers are supported.
+# A numbered list of fields must be included. The field number must be sequential.
+# The individual regexes will be combined into a single parser.
+# The provided example is the same as "combinedloadbalancer" in README.md
+CustomParsers:
+- Name: custom1
+  Type: regex
+  RegexFields:
+    1:
+      Regex: ^(\S+)\s
+      Field: _x-forwarded-proto
+      FieldType: string
+    2:
+      Regex: '(\S+):'
+      Field: _http_host
+      FieldType: string
+    3:
+      Regex: (\S+)\s
+      Field: _x-forwarded-port
+      FieldType: string
+    4:
+      Regex: '(\S+):'
+      Field: _vhost
+      FieldType: string
+    5:
+      Regex: (\S+)\s
+      Field: _vhost_port
+      FieldType: int
+    6:
+      Regex: (\S+)\s
+      Field: _x-forwarded-for
+      FieldType: string
+    7:
+      Regex: (\S+)\s
+      Field: _src_ip
+      FieldType: string
+    8:
+      Regex: \[([^]]+)\]\s
+      Field: timestamp
+      FieldType: date
+      DateFormat: 02/Jan/2006:15:04:05 -0700
+    9:
+      Regex: '"(.*?)"\s'
+      Field: _http_request
+      FieldType: string
+      ShortMessage: true
+    10:
+      Regex: (\S+)\s
+      Field: _http_status
+      FieldType: int
+    11:
+      Regex: (\S+)\s
+      Field: _http_response_size
+      FieldType: int
+    12:
+      Regex: '"((?:[^"]*(?:\\")?)*)"\s'
+      Field: _http_referer
+      FieldType: string
+    13:
+      Regex: '"(.*?)"\s'
+      Field: _user_agent
+      FieldType: string
+    14:
+      Regex: (\S+)\s
+      Field: _duration_usec
+      FieldType: int
+    15:
+      Regex: '"(.*?)"\s'
+      Field: _http_request_method
+      FieldType: string
+    16:
+      Regex: '"(.*?)"\s'
+      Field: _http_request_path
+      FieldType: string
+    17:
+      Regex: '"(.*?)"$'
+      Field: _http_request_query
+      FieldType: string
