@@ -22,24 +22,24 @@ func Log(message string, full string, level int) {
 	// Create GELF message
 	g := parse.GELFMessage{}
 	g["version"] = "1.1"
-	g["host"] = config.Hostname
+	g["host"] = config.Config.Hostname
 	g["level"] = level
 	g["_app_name"] = global.ProductName + " " + global.ProductVersion
 	g["short_message"] = message
 	g["full_message"] = full
 	g["timestamp"] = global.TimeStamp()
-	g["_via_hostname"] = config.Hostname
+	g["_via_hostname"] = config.Config.Hostname
 	g["_via_proto"] = "gelf"
 
 	// Add source IP
-	if config.SyslogOverrideSourceIP != "" {
-		g["_event_source_ip"] = config.SyslogOverrideSourceIP
+	if config.Config.SyslogOverrideSourceIP != "" {
+		g["_event_source_ip"] = config.Config.SyslogOverrideSourceIP
 	} else {
 		g["_event_source_ip"] = global.GetOutboundIP()
 	}
 
 	// Add any static fields
-	for key, value := range config.AddFields {
+	for key, value := range config.Config.AddFields {
 		g[key] = value
 	}
 
@@ -50,7 +50,7 @@ func Log(message string, full string, level int) {
 		return
 	}
 
-	if config.Debug {
+	if config.Config.Debug {
 		log.Printf("Syslog: %s", string(gBytes[:]))
 	}
 

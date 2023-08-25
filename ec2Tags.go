@@ -37,7 +37,7 @@ func ec2Tags() {
 		return
 	} else {
 		instanceID = string(body)
-		config.AddFields["_ec2_instanceID"] = instanceID
+		config.Config.AddFields["_ec2_instanceID"] = instanceID
 	}
 	_ = resp.Body.Close()
 
@@ -53,21 +53,21 @@ func ec2Tags() {
 		log.Printf("Error reading HTTP response for EC2 hostname")
 		return
 	} else {
-		config.AddFields["_ec2_hostname"] = string(body)
+		config.Config.AddFields["_ec2_hostname"] = string(body)
 	}
 	_ = resp.Body.Close()
 
 	// Set up credentials for AWS API
-	if config.AWSID == "role" {
+	if config.Config.AWSID == "role" {
 		// Assume EC2 instance with permissions granted through IAM
 		awsConfig = &aws.Config{
-			Region: aws.String(config.AWSRegion),
+			Region: aws.String(config.Config.AWSRegion),
 		}
 	} else {
 		// Use credentials from configuration
-		awsCredentials = credentials.NewStaticCredentials(config.AWSID, config.AWSKey, "")
+		awsCredentials = credentials.NewStaticCredentials(config.Config.AWSID, config.Config.AWSKey, "")
 		awsConfig = &aws.Config{
-			Region:      aws.String(config.AWSRegion),
+			Region:      aws.String(config.Config.AWSRegion),
 			Credentials: awsCredentials,
 		}
 	}
@@ -99,7 +99,7 @@ func ec2Tags() {
 	// Iterate over EC2 tags and add to addFields[]
 	for _, tag := range ec2Info.Tags {
 		if tag.Key != nil && tag.Value != nil {
-			config.AddFields["_ec2_tag_"+*tag.Key] = *tag.Value
+			config.Config.AddFields["_ec2_tag_"+*tag.Key] = *tag.Value
 		}
 	}
 }

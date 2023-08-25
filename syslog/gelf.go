@@ -46,7 +46,7 @@ func gelf(buf []byte, srcIP string, g parse.GELFMessage) error {
 		jsonBuf = append(jsonBuf, buf[i])
 	}
 
-	if config.Debug {
+	if config.Config.Debug {
 		log.Printf("Attempting to unmarshal: %s", string(jsonBuf))
 	}
 
@@ -57,7 +57,7 @@ func gelf(buf []byte, srcIP string, g parse.GELFMessage) error {
 		return errors.New(fmt.Sprintf("unmarshal failed: %s", err.Error()))
 	}
 
-	if config.Debug {
+	if config.Config.Debug {
 		log.Printf("Successfully unmarshalled: %s", string(jsonBuf))
 	}
 
@@ -90,14 +90,14 @@ func gelf(buf []byte, srcIP string, g parse.GELFMessage) error {
 	}
 
 	// Add hostname and protocol
-	g["_via_hostname"] = config.Hostname
+	g["_via_hostname"] = config.Config.Hostname
 	g["_via_proto"] = "syslog_gelf"
 
 	// Add source IP
-	if config.SyslogOverrideSourceIP != "" {
-		g["_event_source_ip"] = config.SyslogOverrideSourceIP
+	if config.Config.SyslogOverrideSourceIP != "" {
+		g["_event_source_ip"] = config.Config.SyslogOverrideSourceIP
 	} else {
-		if config.SyslogReplaceLocalhost && srcIP == "127.0.0.1" {
+		if config.Config.SyslogReplaceLocalhost && srcIP == "127.0.0.1" {
 			g["_event_source_ip"] = global.GetOutboundIP()
 			if g["_event_source_ip"] == "" {
 				g["_event_source_ip"] = srcIP

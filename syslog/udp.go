@@ -22,20 +22,20 @@ func UDP() {
 	for {
 
 		// Listen for incoming udp packets
-		pc, err := net.ListenPacket("udp", config.SyslogUDP)
+		pc, err := net.ListenPacket("udp", config.Config.SyslogUDP)
 		if err != nil {
-			event.Log(fmt.Sprintf("Error starting UDP listener on %s: %s", config.SyslogUDP, err.Error()), "", global.ERR)
+			event.Log(fmt.Sprintf("Error starting UDP listener on %s: %s", config.Config.SyslogUDP, err.Error()), "", global.ERR)
 			time.Sleep(10 * time.Second)
 			continue
 		}
 
-		event.Log(fmt.Sprintf("Listening for Syslog messages on UDP %s", config.SyslogUDP), "", global.INFO)
+		event.Log(fmt.Sprintf("Listening for Syslog messages on UDP %s", config.Config.SyslogUDP), "", global.INFO)
 
 		// Loop and receive UDP datagrams
 		for {
 			// ReadFrom will respect the length of buf, so we don't need to worry about buffer
 			// overflows. If the packet contains more data than len(buf) it will be truncated.
-			buf := make([]byte, config.SyslogUDPMax)
+			buf := make([]byte, config.Config.SyslogUDPMax)
 			n, addr, err := pc.ReadFrom(buf)
 			if err != nil {
 				// Read error is unusual, restart listener
@@ -45,7 +45,7 @@ func UDP() {
 
 			srcIP := strings.Split(safeAddrString(addr), ":")[0]
 
-			if config.Debug {
+			if config.Config.Debug {
 				log.Printf("Received %d bytes from %s", n, safeAddrString(addr))
 				event.Dump(buf[:n])
 			}

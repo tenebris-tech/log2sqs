@@ -7,6 +7,8 @@ package parse
 import "errors"
 
 // AddRegexParser adds a new regex parser to the list of available parsers
+//
+//goland:noinspection GoUnusedExportedFunction
 func AddRegexParser(name string, fields RegexFields) error {
 	if name == "" {
 		return errors.New("parser name cannot be empty")

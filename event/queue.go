@@ -18,7 +18,7 @@ var eventBuffer chan []byte
 // initQueue creates the queue
 func initQueue() {
 	// Create buffer with a bit of extra space to avoid blocking
-	eventBuffer = make(chan []byte, config.EventBuffer+10)
+	eventBuffer = make(chan []byte, config.Config.EventBuffer+10)
 }
 
 // runQueue reads the internal event buffer channel and writes to SQS
@@ -26,7 +26,7 @@ func runQueue() {
 	bufferWarning := false
 
 	for {
-		bPercent := float64(len(eventBuffer)) / float64(config.EventBuffer)
+		bPercent := float64(len(eventBuffer)) / float64(config.Config.EventBuffer)
 
 		if bufferWarning {
 			if bPercent < 0.6 {

@@ -15,7 +15,7 @@ import (
 func plainTextParser(s string, _ *Parser) (GELFMessage, error) {
 	g := GELFMessage{}
 	g["version"] = "1.1"
-	g["host"] = config.Hostname
+	g["host"] = config.Config.Hostname
 	g["short_message"] = strings.TrimSuffix(s, "\n")
 	g["timestamp"] = global.TimeStamp()
 	g["_original_format"] = "PlainText"

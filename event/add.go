@@ -18,12 +18,12 @@ var discardTime int64 = 0
 // Add log message to internal queue (buffer) for transmission to SQS
 func Add(msg []byte) {
 
-	if config.Debug {
+	if config.Config.Debug {
 		log.Printf("Buffer contains %d log events", len(eventBuffer))
 	}
 
 	// Check if the number of items in the buffer is at the limit
-	if len(eventBuffer) >= config.EventBuffer {
+	if len(eventBuffer) >= config.Config.EventBuffer {
 
 		// Discard oldest message
 		_ = <-eventBuffer

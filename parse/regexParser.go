@@ -46,7 +46,7 @@ func regexParser(s string, p *Parser) (GELFMessage, error) {
 	// Start the GELF message
 	g := GELFMessage{}
 	g["version"] = "1.1"
-	g["host"] = config.Hostname
+	g["host"] = config.Config.Hostname
 	g["_original_format"] = p.format
 
 	// Iterate over the fields and add them to the GELF message

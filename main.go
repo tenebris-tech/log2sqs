@@ -69,17 +69,17 @@ func main() {
 	}()
 
 	// Load configuration information
-	err := config.Load(configFile)
+	err := config.LoadLegacy(configFile)
 	if err != nil {
 		log.Fatal(err.Error())
 	}
 
 	// Add field to report application name and version
-	config.AddFields["_via_app"] = global.ProductName + " " + global.ProductVersion
+	config.Config.AddFields["_via_app"] = global.ProductName + " " + global.ProductVersion
 
 	// Set up logging
-	if config.LogFile != "" {
-		f, err := os.OpenFile(config.LogFile, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+	if config.Config.LogFile != "" {
+		f, err := os.OpenFile(config.Config.LogFile, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 
 		// If unable to open log file, report error, but continue writing logs to stderr
 		if err != nil {
@@ -93,7 +93,7 @@ func main() {
 	}
 
 	// Retrieve EC2 addFields if necessary
-	if config.AddEC2Tags {
+	if config.Config.AddEC2Tags {
 		ec2Tags()
 	}
 
@@ -111,18 +111,18 @@ func main() {
 			os.Exit(1)
 		}
 		ingestFile.ReadAll = true
-		config.InputFiles = append(config.InputFiles, ingestFile)
+		config.Config.InputFiles = append(config.Config.InputFiles, ingestFile)
 	}
 
 	// Iterate over list of files to monitor
-	for _, inputFile := range config.InputFiles {
+	for _, inputFile := range config.Config.InputFiles {
 
 		// Force all file types to lower case
 		inputFile.Type = strings.ToLower(inputFile.Type)
 
 		// Check for valid file type
 		if parse.CheckFormat(inputFile.Type) == false {
-			event.Log(fmt.Sprintf("Unknown input file type: [%d]%s %s", inputFile.Index, inputFile.Name, inputFile.Type), "", global.INFO)
+			event.Log(fmt.Sprintf("Unknown input file type: %s %s", inputFile.Name, inputFile.Type), "", global.INFO)
 		} else {
 			// Launch a goroutine to handle this file
 			go tailFile(inputFile)
@@ -130,7 +130,7 @@ func main() {
 	}
 
 	// Start Syslog UDP if configured
-	if config.SyslogUDP != "" {
+	if config.Config.SyslogUDP != "" {
 		go syslog.UDP()
 	}
 
