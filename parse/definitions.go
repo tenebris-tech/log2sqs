@@ -7,6 +7,7 @@ package parse
 import (
 	"log2sqs/config"
 	"regexp"
+	"sync"
 )
 
 // GELFMessage type can hold GELF fields of various types
@@ -32,7 +33,8 @@ const (
 	formatApacheCombinedLoadBalancer = "combinedloadbalancer"
 )
 
-var Parsers = map[string]Parser{
+var parsersMX = sync.RWMutex{}
+var parsers = map[string]Parser{
 	formatGelf:                       {format: formatGelf, parserFunc: gelfParser},
 	formatText:                       {format: formatText, parserFunc: plainTextParser},
 	formatApacheError:                {format: formatApacheError, parserFunc: regexParser, regexFields: apacheErrorRegex, requireFields: 5},

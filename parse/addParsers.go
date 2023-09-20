@@ -37,6 +37,8 @@ func AddRegexParser(name string, fields config.RegexFields) error {
 		return errors.New("parser fields cannot be empty")
 	}
 
-	Parsers[name] = Parser{format: name, parserFunc: regexParser, regexFields: fields, requireFields: len(fields)}
+	parsersMX.Lock()
+	defer parsersMX.Unlock()
+	parsers[name] = Parser{format: name, parserFunc: regexParser, regexFields: fields, requireFields: len(fields)}
 	return nil
 }

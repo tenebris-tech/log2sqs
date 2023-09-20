@@ -7,6 +7,7 @@ package parse
 import (
 	"errors"
 	"fmt"
+	"log2sqs/config"
 )
 
 // Parse parses the line into a GELF message based on the format
@@ -30,15 +31,36 @@ func Parse(line string, format string) (GELFMessage, error) {
 
 // CheckFormat returns true if the format is in the parsers map
 func CheckFormat(format string) bool {
-	_, ok := Parsers[format]
+	parsersMX.RLock()
+	defer parsersMX.RUnlock()
+	_, ok := parsers[format]
 	return ok
 }
 
 // getParser returns the correct parser for the format or an error if the format is unknown
 func getParser(format string) (Parser, error) {
-	parser, ok := Parsers[format]
+	parsersMX.RLock()
+	defer parsersMX.RUnlock()
+
+	parser, ok := parsers[format]
+
 	if !ok {
 		return Parser{}, errors.New(fmt.Sprintf("unknown format %s", format))
 	}
-	return parser, nil
+
+	// Create a deep copy for thread safety
+	deepCopy := Parser{
+		format:        parser.format,
+		parserFunc:    parser.parserFunc,
+		regex:         parser.regex,
+		regexFields:   make(config.RegexFields),
+		requireFields: parser.requireFields,
+	}
+
+	// Copy the RegexFields map
+	for k, v := range parser.regexFields {
+		deepCopy.regexFields[k] = v
+	}
+
+	return deepCopy, nil
 }
