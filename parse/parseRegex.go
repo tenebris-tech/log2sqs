@@ -7,7 +7,6 @@ package parse
 import (
 	"errors"
 	"fmt"
-	"regexp"
 	"strconv"
 	"strings"
 	"time"
@@ -16,24 +15,11 @@ import (
 )
 
 // regexParser parses Apache/NGINX logs into a GELF message based on the supplied Regex to Field map
-func regexParser(s string, p *Parser) (GELFMessage, error) {
+func (p *Parser) regexParser(s string) (GELFMessage, error) {
 
-	// Check if the parser has been initialized
+	// Check for nil parser - this should never happen
 	if p.regex == nil {
-
-		// Iterate over fields in order to build the Regex
-		tmp := ""
-		for i := 1; i <= len(p.regexFields); i++ {
-			tmp = tmp + p.regexFields[i].Regex
-		}
-
-		r, err := regexp.Compile(tmp)
-		if err != nil {
-			return GELFMessage{}, errors.New(fmt.Sprintf("Regex failed to compile: %s", err.Error()))
-		}
-
-		// Save the pointer to the compiled Regex for future use
-		p.regex = r
+		return GELFMessage{}, errors.New("regex parser is nil")
 	}
 
 	// Parse the line using the Regex
@@ -54,7 +40,7 @@ func regexParser(s string, p *Parser) (GELFMessage, error) {
 		switch p.regexFields[i].FType {
 
 		case "int":
-			g[p.regexFields[i].Field] = String2Int(result[i])
+			g[p.regexFields[i].Field] = string2Int(result[i])
 
 		case "date":
 			tmp := result[i]
@@ -68,10 +54,10 @@ func regexParser(s string, p *Parser) (GELFMessage, error) {
 			g[p.regexFields[i].Field] = t.Unix()
 
 		case "string":
-			g[p.regexFields[i].Field] = EmptyString(result[i])
+			g[p.regexFields[i].Field] = emptyString(result[i])
 
 		default:
-			g[p.regexFields[i].Field] = EmptyString(result[i])
+			g[p.regexFields[i].Field] = emptyString(result[i])
 		}
 
 		// Should this also be the short message Field (required)?
@@ -83,8 +69,8 @@ func regexParser(s string, p *Parser) (GELFMessage, error) {
 	return g, nil
 }
 
-// String2Int returns the integer contained in string or 0
-func String2Int(s string) int {
+// string2Int returns the integer contained in string or 0
+func string2Int(s string) int {
 	ret, err := strconv.Atoi(s)
 	if err != nil {
 		ret = 0
@@ -92,8 +78,8 @@ func String2Int(s string) int {
 	return ret
 }
 
-// EmptyString returns a cleaned string or "-" if empty
-func EmptyString(s string) string {
+// emptyString returns a cleaned string or "-" if empty
+func emptyString(s string) string {
 	r := strings.TrimSpace(s)
 	if r == "" {
 		r = "-"

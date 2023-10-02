@@ -93,7 +93,10 @@ func main() {
 	}
 
 	// Add custom parsers from config.Config
-	parse.AddCustomParsers()
+	err = parse.AddCustomParsers()
+	if err != nil {
+		log.Printf("Error adding custom parsers: %s", err.Error())
+	}
 
 	// Retrieve EC2 addFields if necessary
 	if config.Config.AddEC2Tags {

@@ -5,22 +5,23 @@
 package parse
 
 import (
-	"log2sqs/config"
 	"regexp"
 	"sync"
+
+	"log2sqs/config"
 )
+
+// Parser defines a parser object
+type Parser struct {
+	format        string             // name of the format
+	parserType    int                // parser type
+	requireFields int                // number of fields required to be present
+	regexFields   config.RegexFields // map of regexes for each Field to put them in the correct order
+	regex         *regexp.Regexp     // pointer to the compiled regex
+}
 
 // GELFMessage type can hold GELF fields of various types
 type GELFMessage map[string]interface{}
-
-// Parser a struct that indicates hot to parse a log format
-type Parser struct {
-	format        string                                     // name of the format
-	parserFunc    func(string, *Parser) (GELFMessage, error) // pointer to the parser function
-	regexFields   config.RegexFields                         // map of regexes for each Field to put them in the correct order
-	requireFields int                                        // number of fields required to be present
-	regex         *regexp.Regexp                             // pointer to the compiled regex
-}
 
 // Parse formats
 const (
@@ -35,13 +36,13 @@ const (
 
 var parsersMX = sync.RWMutex{}
 var parsers = map[string]Parser{
-	formatGelf:                       {format: formatGelf, parserFunc: gelfParser},
-	formatText:                       {format: formatText, parserFunc: plainTextParser},
-	formatApacheError:                {format: formatApacheError, parserFunc: regexParser, regexFields: apacheErrorRegex, requireFields: 5},
-	formatApacheCombined:             {format: formatApacheCombined, parserFunc: regexParser, regexFields: apacheCombinedRegex, requireFields: 9},
-	formatApacheCombinedPlus:         {format: formatApacheCombinedPlus, parserFunc: regexParser, regexFields: apacheCombinedPlusRegex, requireFields: 13},
-	formatApacheCombinedPlusVhost:    {format: formatApacheCombinedPlusVhost, parserFunc: regexParser, regexFields: apacheCombinedPlusVhostRegex, requireFields: 15},
-	formatApacheCombinedLoadBalancer: {format: formatApacheCombinedLoadBalancer, parserFunc: regexParser, regexFields: apacheCombinedLoadBalancerRegex, requireFields: 17},
+	formatGelf:                       {format: formatGelf, parserType: GelfParserType},
+	formatText:                       {format: formatText, parserType: PlainTextParserType},
+	formatApacheError:                {format: formatApacheError, parserType: RegexParserType, regexFields: apacheErrorRegex, requireFields: 5},
+	formatApacheCombined:             {format: formatApacheCombined, parserType: RegexParserType, regexFields: apacheCombinedRegex, requireFields: 9},
+	formatApacheCombinedPlus:         {format: formatApacheCombinedPlus, parserType: RegexParserType, regexFields: apacheCombinedPlusRegex, requireFields: 13},
+	formatApacheCombinedPlusVhost:    {format: formatApacheCombinedPlusVhost, parserType: RegexParserType, regexFields: apacheCombinedPlusVhostRegex, requireFields: 15},
+	formatApacheCombinedLoadBalancer: {format: formatApacheCombinedLoadBalancer, parserType: RegexParserType, regexFields: apacheCombinedLoadBalancerRegex, requireFields: 17},
 }
 
 var apacheErrorRegex = config.RegexFields{

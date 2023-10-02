@@ -24,6 +24,13 @@ func tailFile(f config.InputFileDef) {
 
 	// Infinite loop to facilitate restart on error
 	for {
+		// Instantiate a parser of the given type
+		parser, err := parse.New(f.Type)
+		if err != nil {
+			log.Printf("error initializing parser: %s", err.Error())
+			break
+		}
+
 		// Determine where we should start reading. By default, always start at the end to avoid
 		// reprocessing old data. But, if ReadAll is set, start at the beginning.
 		whence := io.SeekEnd
@@ -45,7 +52,7 @@ func tailFile(f config.InputFileDef) {
 
 			// Trim leading and trailing whitespace and parse the line
 			s := strings.TrimSpace(line.Text)
-			g, err2 := parse.Parse(s, f.Type)
+			g, err2 := parser.Parse(s)
 			if err2 != nil {
 				log.Printf("error parsing %s: %s", s, err2.Error())
 			} else {
