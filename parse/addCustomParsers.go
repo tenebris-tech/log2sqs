@@ -14,6 +14,8 @@ import (
 // AddCustomParsers iterates through any custom parsers in config.Config and adds them to the list of available parsers
 func AddCustomParsers() error {
 	for _, p := range config.Config.CustomParsers {
+
+		// Check type of custom parser
 		switch strings.ToLower(p.Type) {
 		case "regex":
 			err := AddRegexParser(p.Name, p.RegexFields)
@@ -39,6 +41,6 @@ func AddRegexParser(name string, fields config.RegexFields) error {
 
 	parsersMX.Lock()
 	defer parsersMX.Unlock()
-	parsers[name] = Parser{format: name, parserFunc: regexParser, regexFields: fields, requireFields: len(fields)}
+	parsers[name] = Parser{format: name, parserType: RegexParserType, regexFields: fields, requireFields: len(fields)}
 	return nil
 }

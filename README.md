@@ -1,6 +1,6 @@
 # log2sqs
 
-**WARNING: The configuration file is transitioning to YAML. Please see the example configuration file and the notes below.**
+**WARNING: The configuration file has transitioned to YAML. Please see the example configuration file and the notes below.**
 
 This application facilitates distributed log collection and parsing into Graylog GELF via an AWS SQS queue. Communication with SQS is over HTTPS, providing a relatively secure log collection mechanism.
 

@@ -7,7 +7,7 @@ package parse
 import "encoding/json"
 
 // gelfParser parses a GELF message
-func gelfParser(s string, _ *Parser) (GELFMessage, error) {
+func (p *Parser) gelfParser(s string) (GELFMessage, error) {
 	g := GELFMessage{}
 	err := json.Unmarshal([]byte(s), &g)
 	if err != nil {

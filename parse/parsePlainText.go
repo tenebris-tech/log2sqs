@@ -12,7 +12,7 @@ import (
 )
 
 // plainTextParser turns the string into a GELF message
-func plainTextParser(s string, _ *Parser) (GELFMessage, error) {
+func (p *Parser) plainTextParser(s string) (GELFMessage, error) {
 	g := GELFMessage{}
 	g["version"] = "1.1"
 	g["host"] = config.Config.Hostname
